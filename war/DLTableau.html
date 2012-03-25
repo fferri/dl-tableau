@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link type="text/css" rel="stylesheet" href="DLTableau.css">
+    <title>DL Tableau by Federico Ferri</title>
+    <script type="text/javascript" language="javascript" src="dltableau/dltableau.nocache.js"></script>
+  </head>
+  <body>
+    <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
+    
+    <noscript>
+      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+        Your web browser must have JavaScript enabled
+        in order for this application to display correctly.
+      </div>
+    </noscript>
+
+    <h1>DL Tableau</h1>
+	<a href="#" onClick="var s = document.getElementById('help').style; s.display=(s.display=='none'?'block':'none'); return false;">Syntax help</a>
+	<div id="help" style="display: none; background: LightYellow;">
+	<table border="0">
+	<tr><td class="sym">&exist;R.C</td><td class="txt">exists R. C</td></tr>
+	<tr><td class="sym">&forall;R.C</td><td class="txt">forall R. C</td></tr>
+	<tr><td class="sym">C &#x2293; D</td><td class="txt">C and D</td></tr>
+	<tr><td class="sym">C &#x2294; D</td><td class="txt">C or D</pre><br/>
+	<tr><td class="sym">&not;C</td><td class="txt">not C</pre><br/>
+	<tr><td class="sym">C &#x2291; D</td><td class="txt">C subsumed-by D</td></tr>
+	</table></div>
+
+    <table align="center" style="width: 100%;">
+      <tr><td colspan="3" style="font-weight:bold;">Enter a DL concept expression:</td></tr>
+      <tr><td id="nameFieldContainer"></td><td id="sendButtonContainer"></td><td id="astButtonContainer"></td></tr>
+      <tr><td id="optionsContainer" colspan="3"></td></tr>
+      <tr><td colspan="3" style="color:red;" id="errorLabelContainer"></td></tr>
+      <tr><td colspan="3" style="" id="output"></td></tr>
+    </table>
+    
+    <div id="footer" style="text-align: center; font-size: 8pt; font-weight: lighter; font-color: gray;">Developed by <b>Federico Ferri</b> &copy;2012 - Made using Java, JavaCC, GWT - <a href="bugreport.jsp">Report a bug</a></div>
+  </body>
+</html>

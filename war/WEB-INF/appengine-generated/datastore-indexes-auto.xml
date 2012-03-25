@@ -1,0 +1,10 @@
+<!-- Indices written at Sun, 25 Mar 2012 13:30:45 UTC -->
+
+<datastore-indexes>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="formulaLog" ancestor="true" source="auto">
+        <property name="date" direction="desc"/>
+    </datastore-index>
+
+</datastore-indexes>

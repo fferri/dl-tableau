@@ -1,0 +1,2 @@
+serviceClass: net.sf.dltableau.client.DLTableauService
+path: 169E64FA2DEAF1680B91D9B279B118D7.gwt.rpc
