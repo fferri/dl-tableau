@@ -1,0 +1,41 @@
+options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(DLLiteParser)package net.sf.dltableau.server.parser;
+import net.sf.dltableau.server.parser.ast.*;import java.io.StringReader;
+public class DLLiteParser{  public static AbstractNode parse(String s) throws ParseException  {    DLLiteParser p = new DLLiteParser(new StringReader(s));    return p.E();  }}PARSER_END(DLLiteParser)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* OPERATORS */{  < SUBSUMED_BY : "subsumed-by" >| < OR : "or" >| < AND : "and" >| < NOT : "not" >
+| < FORALL : "forall" >
+| < EXISTS : "exists" >
+| < DOT : "." >
+| < PAR_OP : "(" >
+| < PAR_CL : ")" >}TOKEN :{  < ATOM : (< CHARUPPERCASE >|< CHARLOWERCASE >)(< CHARUPPERCASE >|< CHARLOWERCASE >|< DIGIT >)* >
+| < #CHARUPPERCASE : [ "A"-"Z" ] >
+| < #CHARLOWERCASE : [ "a"-"z" ] >
+| < #DIGIT : [ "0"-"9" ] >}AbstractNode E() :{  AbstractNode n, r;}
+{
+  n = D() r = E1(n)  {	return r;  }
+}
+
+AbstractNode E1(AbstractNode n) :{  AbstractNode n2, r;  SubsumedBy ssb;}
+{  < SUBSUMED_BY > n2 = D() {ssb = new SubsumedBy(n, n2); } r = E1(ssb)  {	return r;  }  | {return n;}}
+
+AbstractNode D() :{  AbstractNode n, r;}{
+  n = C() r = D1(n)  {    return r;  }}
+
+AbstractNode D1(AbstractNode n) :{  AbstractNode n2, r;  Or or;}{
+  < OR > n2 = C() {or = new Or(n, n2);} r = D1(or)  {    return r;  }  | {return n;}}
+
+AbstractNode C() :{  AbstractNode n, r;}{
+  n = N() r = C1(n)  {    return r;  }}
+
+AbstractNode C1(AbstractNode n) :{  AbstractNode n2, r;  And and;}{
+  < AND > n2 = N() {and = new And(n, n2);} r = C1(and)  {    return r;  }  | {return n;}}
+
+AbstractNode N() :{  AbstractNode n;  Atom role;}{
+  < FORALL > role = A() < DOT > n = F()  {	return new ForAll(role, n);  }    | < EXISTS > role = A() < DOT > n = F()  {	return new Exists(role, n);  }  | n = F()  {    return n;  }}AbstractNode F() :{  AbstractNode n;}{  < NOT > n = G()  {    return new Not(n);  }    | n = G()  {    return n;  }}
+
+AbstractNode G() :{  AbstractNode expr;  Atom atom;}{
+  < PAR_OP > expr = E() < PAR_CL >  {    return new Parens(expr);  }  
+  | atom = A()  {    return atom;  }
+}
+
+Atom A() :
+{  Token atomToken;}{
+  atomToken = < ATOM >  {    return new Atom(atomToken.image);  }}
