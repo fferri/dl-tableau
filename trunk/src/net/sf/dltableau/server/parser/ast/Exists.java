@@ -8,6 +8,6 @@ public class Exists extends AbstractQuantifier {
 
 	@Override
 	protected String quantifierName() {
-		return AbstractNode.EXISTS;
+		return SyntaxRenderer.EXISTS();
 	}
 }

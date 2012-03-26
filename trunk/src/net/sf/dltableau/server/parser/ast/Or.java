@@ -8,6 +8,6 @@ public class Or extends AbstractBinOp {
 
 	@Override
 	protected String opName() {
-		return AbstractNode.OR;
+		return SyntaxRenderer.OR();
 	}
 }
