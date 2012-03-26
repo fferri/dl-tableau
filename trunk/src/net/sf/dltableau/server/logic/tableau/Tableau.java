@@ -39,7 +39,6 @@ public class Tableau implements Cloneable {
 			if(!(i instanceof ConceptInstance)) continue;
 			ConceptInstance ci = (ConceptInstance)i;
 			AbstractNode c = ci.getConcept();
-			c = stripParens(c);
 			int x1 = ci.getIndividual();
 			
 			if(c instanceof And) {
@@ -50,16 +49,14 @@ public class Tableau implements Cloneable {
 				if(expandStep((Exists)c, ci.getIndividual(), abox)) return true;
 			} else if(c instanceof ForAll) {
 				if(expandStep((ForAll)c, x1, abox)) return true;
-			}/* else if(c instanceof Parens) {
-				if(expandStep((Parens)c, x1, abox)) return true;
-			}*/
+			}
 		}
 		return false;
 	}
 	
 	protected boolean expandStep(And and, int x1, ABOX abox) {
-		ConceptInstance ci1 = new ConceptInstance(stripParens(and.getOp1()), x1);
-		ConceptInstance ci2 = new ConceptInstance(stripParens(and.getOp2()), x1);
+		ConceptInstance ci1 = new ConceptInstance(and.getOp1(), x1);
+		ConceptInstance ci2 = new ConceptInstance(and.getOp2(), x1);
 
 		if(!(abox.contains(ci1) && abox.contains(ci2))) {
 			ABOX a1 = new ABOX(abox);
@@ -72,8 +69,8 @@ public class Tableau implements Cloneable {
 	}
 	
 	protected boolean expandStep(Or or, int x1, ABOX abox) {
-		ConceptInstance ci1 = new ConceptInstance(stripParens(or.getOp1()), x1);
-		ConceptInstance ci2 = new ConceptInstance(stripParens(or.getOp2()), x1);
+		ConceptInstance ci1 = new ConceptInstance(or.getOp1(), x1);
+		ConceptInstance ci2 = new ConceptInstance(or.getOp2(), x1);
 
 		if(!(abox.contains(ci1) || abox.contains(ci2))) {
 			ABOX a1 = new ABOX(abox), a2 = new ABOX(abox);
@@ -88,7 +85,7 @@ public class Tableau implements Cloneable {
 	protected boolean expandStep(ForAll forall, int x1, ABOX abox) {
 		List<Integer> l = abox.getMatchingIndividualsByRole(forall.getRole(), x1);
 		for(Integer x2 : l) {
-			ConceptInstance ci1 = new ConceptInstance(stripParens(forall.getExpression()), x2);
+			ConceptInstance ci1 = new ConceptInstance(forall.getExpression(), x2);
 			if(!abox.contains(ci1)) {
 				ABOX a1 = new ABOX(abox);
 				a1.add(ci1);
@@ -103,7 +100,7 @@ public class Tableau implements Cloneable {
 		boolean foundPCT = false;
 		List<Integer> l = abox.getMatchingIndividualsByRole(exists.getRole(), x1);
 		for(Integer x2 : l) {
-			if(abox.contains(new ConceptInstance(stripParens(exists.getExpression()), x2))) {
+			if(abox.contains(new ConceptInstance(exists.getExpression(), x2))) {
 				foundPCT = true;
 				break;
 			}
@@ -111,7 +108,7 @@ public class Tableau implements Cloneable {
 		
 		if(!foundPCT) {
 			int newIndividual = abox.getNewIndividual();
-			ConceptInstance ci1 = new ConceptInstance(stripParens(exists.getExpression()), newIndividual);
+			ConceptInstance ci1 = new ConceptInstance(exists.getExpression(), newIndividual);
 			RoleInstance ri1 = new RoleInstance(exists.getRole(), x1, newIndividual);
 			ABOX a1 = new ABOX(abox);
 			a1.add(ci1);
@@ -135,10 +132,5 @@ public class Tableau implements Cloneable {
 	
 	public void expand() {
 		while(expandStep());
-	}
-	
-	private static AbstractNode stripParens(AbstractNode n) {
-		while(n instanceof Parens) n = ((Parens)n).getOp();
-		return n;
 	}
 }

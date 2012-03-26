@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sf.dltableau.server.parser.ast.AbstractNode;
 import net.sf.dltableau.server.parser.ast.Atom;
+import net.sf.dltableau.server.parser.ast.Parens;
 
 public class ABOX {
 	private List<AbstractInstance> aList = new ArrayList<AbstractInstance>();
@@ -12,9 +14,25 @@ public class ABOX {
 	private List<ABOX> child = new ArrayList<ABOX>(2);
 	private ABOX parent = null;
 	
+	private boolean STRIP_PARENS = true;
+
 	public ABOX(ABOX parent) {
 		this.parent = parent;
 		if(parent != null) parent.child.add(this);
+	}
+	
+	private AbstractNode stripParens(AbstractNode n) {
+		while(n instanceof Parens) n = ((Parens)n).getOp();
+		return n;
+	}
+	
+	private AbstractInstance stripParens(AbstractInstance i) {
+		if(i instanceof ConceptInstance) {
+			ConceptInstance ci = (ConceptInstance)i;
+			return new ConceptInstance(stripParens(ci.getConcept()), ci.getIndividual());
+		} else {
+			return i;
+		}
 	}
 	
 	public List<AbstractInstance> instances() {
@@ -34,7 +52,10 @@ public class ABOX {
 	}
 
 	public void add(AbstractInstance i) {
-		if(!aList.contains(i)) aList.add(i);
+		if(STRIP_PARENS) i = stripParens(i);
+		if(!contains(i, STRIP_PARENS)) {
+			aList.add(i);
+		}
 	}
 	
 	public String toString() {
@@ -54,8 +75,13 @@ public class ABOX {
 	}
 	
 	public boolean contains(AbstractInstance i) {
+		if(STRIP_PARENS) i = stripParens(i);
+		return contains(i, STRIP_PARENS);
+	}
+	
+	private boolean contains(AbstractInstance i, boolean stripParens) {
 		return aList.contains(i) ||
-			(parent != null ? parent.contains(i) : false);
+				(parent != null ? parent.contains(i, stripParens) : false);
 	}
 	
 	public boolean containsClash() {
