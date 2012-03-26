@@ -8,6 +8,6 @@ public class SubsumedBy extends AbstractBinOp {
 
 	@Override
 	protected String opName() {
-		return AbstractNode.SUBSUMED_BY;
+		return SyntaxRenderer.SUBSUMED_BY();
 	}
 }

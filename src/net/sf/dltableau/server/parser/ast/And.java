@@ -8,6 +8,6 @@ public class And extends AbstractBinOp {
 
 	@Override
 	protected String opName() {
-		return AbstractNode.AND;
+		return SyntaxRenderer.AND();
 	}
 }

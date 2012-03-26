@@ -10,8 +10,10 @@ import net.sf.dltableau.server.logic.tableau.Transform;
 import net.sf.dltableau.server.parser.DLLiteParser;
 import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.AbstractNode;
+import net.sf.dltableau.server.parser.ast.SyntaxRenderer;
 import net.sf.dltableau.shared.DLTableauBean;
 import net.sf.dltableau.shared.DLTableauNode;
+import net.sf.dltableau.shared.DLTableauOptions;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -23,14 +25,14 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 @SuppressWarnings("serial")
 public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTableauService {
 	@Override
-	public DLTableauBean solve(String formula, boolean useUnicode) throws Exception {
+	public DLTableauBean solve(String formula, DLTableauOptions options) throws Exception {
 		Key logKey = KeyFactory.createKey("log", "log0");
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		Entity e = new Entity("formulaLog", logKey);
 		e.setProperty("date", new Date());
 		e.setProperty("ip", getThreadLocalRequest().getRemoteAddr());
 		
-		AbstractNode.setUnicodeRendering(false);
+		boolean oldUnicodeRenderingVal = SyntaxRenderer.setUseUnicode(false);
 		DLTableauBean ret = new DLTableauBean();
 		AbstractNode concept, concept0;
 		try {
@@ -45,7 +47,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			throw new RuntimeException("Parse exception: " + ex.getMessage());
 		}
 
-		AbstractNode.setUnicodeRendering(useUnicode);
+		SyntaxRenderer.setUseUnicode(options.isUseUnicodeSymbols());
 		ret.original = concept0.toString();
 		
 		concept = Transform.pushNotInside(concept0);
@@ -54,6 +56,8 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		tableau.init(concept);
 		tableau.expand();
 		ret.root = buildABOXTree(tableau.abox());
+
+		SyntaxRenderer.setUseUnicode(oldUnicodeRenderingVal);
 
 		return ret;
 	}
@@ -76,13 +80,20 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	}
 	
 	@Override
-	public String syntaxTree(String formula) throws Exception {
+	public String syntaxTree(String formula, DLTableauOptions options) throws Exception {
+		boolean oldUnicodeRenderingVal = SyntaxRenderer.setUseUnicode(options.isUseUnicodeSymbols());
+
 		AbstractNode concept;
 		try {
 			concept = DLLiteParser.parse(formula);
 		} catch(ParseException e) {
 			throw new RuntimeException("Parse exception: " + e.getMessage());
 		}
-		return concept.treeString();
+		
+		String ret = concept.treeString();
+		
+		SyntaxRenderer.setUseUnicode(oldUnicodeRenderingVal);
+
+		return ret;
 	}
 }

@@ -7,7 +7,7 @@ public class Not extends AbstractUnOp {
 
 	@Override
 	protected String opName() {
-		return AbstractNode.NOT;
+		return SyntaxRenderer.NOT();
 	}
 	
 	@Override

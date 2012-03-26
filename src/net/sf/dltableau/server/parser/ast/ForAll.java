@@ -8,6 +8,6 @@ public class ForAll extends AbstractQuantifier {
 
 	@Override
 	protected String quantifierName() {
-		return AbstractNode.FORALL;
+		return SyntaxRenderer.FORALL();
 	}
 }
