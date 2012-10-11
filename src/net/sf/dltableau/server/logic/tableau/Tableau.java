@@ -1,9 +1,23 @@
 package net.sf.dltableau.server.logic.tableau;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.dltableau.server.parser.ast.*;
 
+/**
+ * Model of tableau, containing a tree of ABOXes.
+ * Each ABOX contains the instances in the current branch,
+ * and implicitly contains all the instances in its
+ * ancestors, recursively.
+ * 
+ * Tableau performs the expansion (according to the well known rules).
+ * Each expansion step adds one or two ABOXes as child
+ * of the current ABOX.
+ * 
+ * @author Federico Ferri
+ *
+ */
 public class Tableau implements Cloneable {
 	private ABOX abox0 = null;
 		
@@ -14,6 +28,30 @@ public class Tableau implements Cloneable {
 	
 	public ABOX abox() {
 		return abox0;
+	}
+	
+	public List<ABOX> allBranches() {
+		List<ABOX> leaves = new ArrayList<ABOX>();
+		allBranches(abox0, leaves);
+		return leaves;
+	}
+	
+	private static void allBranches(ABOX abox, List<ABOX> leaves) {
+		if(abox.children().isEmpty()) leaves.add(abox);
+		else for(ABOX ab : abox.children()) allBranches(ab, leaves);
+	}
+	
+	public List<ABOX> openBranches() {
+		List<ABOX> allBranches = allBranches();
+		List<ABOX> openBranches = new ArrayList<ABOX>();
+		for(ABOX ab : allBranches)
+			if(!ab.containsClash())
+				openBranches.add(ab);
+		return openBranches;
+	}
+	
+	public boolean isClosed() {
+		return openBranches().isEmpty();
 	}
 	
 	public boolean expandStep() {
