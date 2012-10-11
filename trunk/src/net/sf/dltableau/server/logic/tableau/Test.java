@@ -44,17 +44,17 @@ public class Test {
 		
 		if(STEP_BY_STEP_EXPANSION) {
 			while(true) {
-				out.println(tableau.abox().toStringRecursive());
+				out.println(tableau.getABOX().toStringRecursive());
 				try {out.println("press a key for next step..."); in.read();} catch (IOException e) {}
 				if(!tableau.expandStep()) break;
 			}
 		} else {
 			tableau.expand();
-			out.println(tableau.abox().toStringRecursive());
+			out.println(tableau.getABOX().toStringRecursive());
 		}
 		
 		if(PRINT_ALL_MODELS) {
-			List<ABOX> openBranches = tableau.openBranches();
+			List<ABOX> openBranches = tableau.getOpenBranches();
 			if(openBranches.isEmpty())
 				out.println("Tableau is closed. No model available.");
 			else for(int i = 0; i < openBranches.size(); i++) {
