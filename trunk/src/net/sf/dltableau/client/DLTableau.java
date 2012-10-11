@@ -33,8 +33,9 @@ public class DLTableau implements EntryPoint {
 	final CheckBox useUnicode = new CheckBox("Use UNICODE symbols");
 
 	public void onModuleLoad() {
-		formulaField.setText("exists R. (forall S. C) and forall R. (exists S. not C)");
-
+		//formulaField.setText("exists R. (forall S. C) and forall R. (exists S. not C)");
+		formulaField.setText("not (exists X. (C and D and (E or F and G)) and forall X.(not C))");
+		
 		goButton.addStyleName("sendButton");
 		formulaField.addStyleName("formula");
 
