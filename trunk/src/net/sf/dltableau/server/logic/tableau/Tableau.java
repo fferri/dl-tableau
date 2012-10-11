@@ -37,8 +37,8 @@ public class Tableau implements Cloneable {
 	}
 	
 	private static void allBranches(ABOX abox, List<ABOX> leaves) {
-		if(abox.children().isEmpty()) leaves.add(abox);
-		else for(ABOX ab : abox.children()) allBranches(ab, leaves);
+		if(abox.isLeaf()) leaves.add(abox);
+		else for(ABOX ab : abox.getChildren()) allBranches(ab, leaves);
 	}
 	
 	public List<ABOX> openBranches() {
@@ -61,7 +61,7 @@ public class Tableau implements Cloneable {
 	protected boolean expandStepR(ABOX abox) {
 		if(abox.isLeaf())
 			return expandStep(abox);
-		for(ABOX abox1 : abox.children()) {
+		for(ABOX abox1 : abox.getChildren()) {
 			boolean r = expandStepR(abox1);
 			if(r) return true;
 		}
