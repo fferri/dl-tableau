@@ -13,12 +13,26 @@ public class ABOX {
 	
 	private List<ABOX> child = new ArrayList<ABOX>(2);
 	private ABOX parent = null;
+	private int level = 0;
+	private int childOrdinal = 0;
 	
 	private boolean STRIP_PARENS = true;
 
 	public ABOX(ABOX parent) {
+		// double linked tree of ABOXes:
 		this.parent = parent;
 		if(parent != null) parent.child.add(this);
+		
+		// locate level of this ABOX in the ABOX tree
+		ABOX tmp = this;
+		while(tmp.parent != null) {
+			level++;
+			tmp = tmp.parent;
+		}
+		
+		// locate ordinal of this ABOX among the siblings
+		if(parent != null)
+			childOrdinal = parent.child.indexOf(this);
 	}
 	
 	private AbstractNode stripParens(AbstractNode n) {
@@ -50,16 +64,23 @@ public class ABOX {
 	public ABOX parent() {
 		return parent;
 	}
+	
+	public int level() {
+		return level;
+	}
+	
+	public String getName() {
+		if(parent != null && parent.child.size() > 1)
+			return "A" + level + "." + childOrdinal;
+		else
+			return "A" + level;
+	}
 
 	public void add(AbstractInstance i) {
 		if(STRIP_PARENS) i = stripParens(i);
 		if(!contains(i, STRIP_PARENS)) {
 			aList.add(i);
 		}
-	}
-	
-	public String toString() {
-		return aList.toString();
 	}
 	
 	public int size() {
@@ -149,18 +170,37 @@ public class ABOX {
 		else return "  " + indent(--level);
 	}
 	
-	public String treeString() {
+	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		treeString(0, sb);
+		sb.append(getName()).append(" = ");
+		if(parent != null) sb.append(parent.getName()).append(" U ");
+		sb.append(aList.toString());
+		if(containsClash()) sb.append(" *");
 		return sb.toString();
 	}
 	
-	protected void treeString(int level, StringBuilder sb) {
-		for(AbstractInstance i : aList) {
-			sb.append(indent(level) + i + "\n");
-		}
+	public String toStringRecursive() {
+		StringBuilder sb = new StringBuilder();
+		toStringRecursive(sb);
+		return toString() + sb.toString();
+	}
+	
+	private String toStringRecursive(StringBuilder sb) {
 		for(ABOX abox : child) {
-			abox.treeString(level + 1, sb);
+			sb.append("\n").append(abox.toString());
+			abox.toStringRecursive(sb);
 		}
+		return sb.toString();
+	}
+	
+	public String treeString() {
+		StringBuilder sb = new StringBuilder();
+		treeString(sb);
+		return sb.toString();
+	}
+	
+	protected void treeString(StringBuilder sb) {
+		for(AbstractInstance i : aList) sb.append(indent(level) + i + "\n");
+		for(ABOX abox : child) abox.treeString(sb);
 	}
 }
