@@ -8,10 +8,19 @@ import net.sf.dltableau.server.parser.ast.AbstractNode;
 import net.sf.dltableau.server.parser.ast.Atom;
 import net.sf.dltableau.server.parser.ast.Parens;
 
+/**
+ * Model of an ABOX, containing instances (of concepts and of roles).
+ * Used by Tableau to incrementally build a model.
+ * 
+ * ABOX is hierarchical: it implicitly contains its ancestor's contents.
+ * 
+ * @author Federico Ferri
+ *
+ */
 public class ABOX {
 	private List<AbstractInstance> aList = new ArrayList<AbstractInstance>();
 	
-	private List<ABOX> child = new ArrayList<ABOX>(2);
+	private List<ABOX> children = new ArrayList<ABOX>(2);
 	private ABOX parent = null;
 	private int level = 0;
 	private int childOrdinal = 0;
@@ -21,7 +30,7 @@ public class ABOX {
 	public ABOX(ABOX parent) {
 		// double linked tree of ABOXes:
 		this.parent = parent;
-		if(parent != null) parent.child.add(this);
+		if(parent != null) parent.children.add(this);
 		
 		// locate level of this ABOX in the ABOX tree
 		ABOX tmp = this;
@@ -32,7 +41,7 @@ public class ABOX {
 		
 		// locate ordinal of this ABOX among the siblings
 		if(parent != null)
-			childOrdinal = parent.child.indexOf(this);
+			childOrdinal = parent.children.indexOf(this);
 	}
 	
 	private AbstractNode stripParens(AbstractNode n) {
@@ -49,28 +58,28 @@ public class ABOX {
 		}
 	}
 	
-	public List<AbstractInstance> instances() {
+	public List<AbstractInstance> getInstances() {
 		return Collections.unmodifiableList(aList);
 	}
 	
-	public List<ABOX> children() {
-		return Collections.unmodifiableList(child);
+	public List<ABOX> getChildren() {
+		return Collections.unmodifiableList(children);
 	}
 	
 	public boolean isLeaf() {
-		return child.isEmpty();
+		return children.isEmpty();
 	}
 	
-	public ABOX parent() {
+	public ABOX getParent() {
 		return parent;
 	}
 	
-	public int level() {
+	public int getLevel() {
 		return level;
 	}
 	
 	public String getName() {
-		if(parent != null && parent.child.size() > 1)
+		if(parent != null && parent.children.size() > 1)
 			return "A" + level + "." + childOrdinal;
 		else
 			return "A" + level;
@@ -165,11 +174,6 @@ public class ABOX {
 		return ret;
 	}
 	
-	protected static String indent(int level) {
-		if(level <= 0) return "";
-		else return "  " + indent(--level);
-	}
-	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getName()).append(" = ");
@@ -186,7 +190,7 @@ public class ABOX {
 	}
 	
 	private String toStringRecursive(StringBuilder sb) {
-		for(ABOX abox : child) {
+		for(ABOX abox : children) {
 			sb.append("\n").append(abox.toString());
 			abox.toStringRecursive(sb);
 		}
@@ -200,7 +204,8 @@ public class ABOX {
 	}
 	
 	protected void treeString(StringBuilder sb) {
-		for(AbstractInstance i : aList) sb.append(indent(level) + i + "\n");
-		for(ABOX abox : child) abox.treeString(sb);
+		String indent = ""; for(int i = 0; i < level; i++) indent += "  ";
+		for(AbstractInstance i : aList) sb.append(indent + i + "\n");
+		for(ABOX abox : children) abox.treeString(sb);
 	}
 }

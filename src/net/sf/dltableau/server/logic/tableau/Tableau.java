@@ -26,23 +26,23 @@ public class Tableau implements Cloneable {
 		abox0.add(new ConceptInstance(concept, abox0.getNewIndividual()));
 	}
 	
-	public ABOX abox() {
+	public ABOX getABOX() {
 		return abox0;
 	}
 	
-	public List<ABOX> allBranches() {
+	public List<ABOX> getAllBranches() {
 		List<ABOX> leaves = new ArrayList<ABOX>();
-		allBranches(abox0, leaves);
+		getAllBranches(abox0, leaves);
 		return leaves;
 	}
 	
-	private static void allBranches(ABOX abox, List<ABOX> leaves) {
+	private static void getAllBranches(ABOX abox, List<ABOX> leaves) {
 		if(abox.isLeaf()) leaves.add(abox);
-		else for(ABOX ab : abox.getChildren()) allBranches(ab, leaves);
+		else for(ABOX ab : abox.getChildren()) getAllBranches(ab, leaves);
 	}
 	
-	public List<ABOX> openBranches() {
-		List<ABOX> allBranches = allBranches();
+	public List<ABOX> getOpenBranches() {
+		List<ABOX> allBranches = getAllBranches();
 		List<ABOX> openBranches = new ArrayList<ABOX>();
 		for(ABOX ab : allBranches)
 			if(!ab.containsClash())
@@ -51,7 +51,7 @@ public class Tableau implements Cloneable {
 	}
 	
 	public boolean isClosed() {
-		return openBranches().isEmpty();
+		return getOpenBranches().isEmpty();
 	}
 	
 	public boolean expandStep() {
