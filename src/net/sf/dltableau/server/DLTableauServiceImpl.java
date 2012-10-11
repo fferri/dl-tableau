@@ -55,7 +55,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		Tableau tableau = new Tableau();
 		tableau.init(concept);
 		tableau.expand();
-		ret.root = buildABOXTree(tableau.abox());
+		ret.root = buildABOXTree(tableau.getABOX());
 
 		SyntaxRenderer.setUseUnicode(oldUnicodeRenderingVal);
 
@@ -64,7 +64,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	
 	private DLTableauNode buildABOXTree(ABOX abox) {
 		DLTableauNode n = new DLTableauNode();
-		for(AbstractInstance i : abox.instances()) {
+		for(AbstractInstance i : abox.getInstances()) {
 			n.expr.add(i.toString());
 		}
 		if(abox.isLeaf() && abox.containsClash()) {
@@ -72,7 +72,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			clashMarker.expr.add("&#x22c6;");
 			n.child.add(clashMarker);
 		} else {
-			for(ABOX abox1 : abox.children()) {
+			for(ABOX abox1 : abox.getChildren()) {
 				n.child.add(buildABOXTree(abox1));
 			}
 		}
