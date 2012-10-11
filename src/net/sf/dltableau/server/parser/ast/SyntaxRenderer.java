@@ -22,15 +22,15 @@ public class SyntaxRenderer {
 	}
 	
 	public static String NOT() {
-		return (useUnicode) ? "&not;" : " not ";
+		return (useUnicode) ? "&not;" : "not ";
 	}
 	
 	public static String FORALL() {
-		return (useUnicode) ? "&forall;" : " forall ";
+		return (useUnicode) ? "&forall;" : "forall ";
 	}
 	
 	public static String EXISTS() {
-		return (useUnicode) ? "&exist;" : " exists ";
+		return (useUnicode) ? "&exist;" : "exists ";
 	}
 	
 	public static String SUBSUMED_BY() {
