@@ -1,5 +1,8 @@
 package net.sf.dltableau.server.logic.tableau;
 
+import static java.lang.System.in;
+import static java.lang.System.out;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,41 +14,55 @@ import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.*;
 
 public class Test {
+	private static final boolean PRINT_ABSTRACT_SYNTAX_TREE = false;
+	private static final boolean PRINT_NEGATION_NORMAL_FORM = false;
+	private static final boolean STEP_BY_STEP_EXPANSION = false;
+	private static final boolean PRINT_ALL_MODELS = true;
+	
+	private static final String examples[] = {
+		"not(exists X. (C and D and (E or F and G)) and forall X.(not C))",
+		"exists R. (forall S. C) and forall R. (exists S. not C)",
+		"(exists(S.C) and exists(S.D)) and forall(S.(not C or not D))",
+		"exists(R.A) and exists(R.B) and not exists(R.A and B)"
+	};
+	
 	public static void main(String[] args) throws ParseException {
-		//String conceptStr = "exists(R.A) and exists(R.B) and not exists(R.A and B)";
-		//String conceptStr = "(exists(S.C) and exists(S.D)) and forall(S.(not C or not D))";
-		String conceptStr = "exists R. (forall S. C) and forall R. (exists S. not C)";
-		System.out.println("Concept string: " + conceptStr);
-		AbstractNode concept = DLLiteParser.parse(conceptStr);
-		System.out.println("Parsed concept string: " + concept);
-		System.out.println("Syntax tree:\n" + concept.treeString());
+		AbstractNode concept = DLLiteParser.parse(examples[0]);
 		concept = Transform.pushNotInside(concept);
-		System.out.println("Negation normal form of concept: " + concept);
+		out.println("Concept string (parsed): " + concept);
+		
+		if(PRINT_ABSTRACT_SYNTAX_TREE) {
+			out.println("Syntax tree:\n" + concept.treeString());
+		}
+		
+		if(PRINT_NEGATION_NORMAL_FORM) {
+			out.println("Negation normal form of concept: " + concept);
+		}
 		
 		Tableau tableau = new Tableau();
 		tableau.init(concept);
-		/*
-		tableau.expand();
-
-		System.out.println("Tableau:");
-		System.out.println(tableau.abox().treeString());
-		*/
 		
-		while(true) {
-			System.out.println(tableau.abox().treeString());
-			try {System.in.read();} catch (IOException e) {}
-			if(!tableau.expandStep()) break;
+		if(STEP_BY_STEP_EXPANSION) {
+			while(true) {
+				out.println(tableau.abox().toStringRecursive());
+				try {out.println("press a key for next step..."); in.read();} catch (IOException e) {}
+				if(!tableau.expandStep()) break;
+			}
+		} else {
+			tableau.expand();
+			out.println(tableau.abox().toStringRecursive());
 		}
 		
-		/*
-			System.out.println("ABOX:");
-			ABOX abox = aboxes.get(0);
-			for(int j = 0; j < abox.size(); j++) {
-				System.out.println("  " + j + ": " + abox.get(j));
+		if(PRINT_ALL_MODELS) {
+			List<ABOX> openBranches = tableau.openBranches();
+			if(openBranches.isEmpty())
+				out.println("Tableau is closed. No model available.");
+			else for(int i = 0; i < openBranches.size(); i++) {
+				out.println("-------- Model #" + i + ": ----------------");
+				//out.print(openBranches.get(i));
+				printModel(openBranches.get(i));
 			}
-			System.out.println("Model:");
-			printModel(abox);
-		*/
+		}
 	}
 	
 	public static void printModel(ABOX abox) {
