@@ -51,7 +51,14 @@ public class Tableau implements Cloneable {
 	}
 	
 	public boolean isClosed() {
-		return getOpenBranches().isEmpty();
+		//return getOpenBranches().isEmpty();
+		
+		// faster:
+		List<ABOX> allBranches = getAllBranches();
+		for(ABOX ab : allBranches)
+			if(!ab.containsClash())
+				return false;
+		return true;
 	}
 	
 	public boolean expandStep() {
