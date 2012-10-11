@@ -27,7 +27,7 @@ public class Tableau implements Cloneable {
 	}
 	
 	public ABOX getABOX() {
-		return abox0;
+		return new UnmodifiableABOX(abox0);
 	}
 	
 	public List<ABOX> getAllBranches() {

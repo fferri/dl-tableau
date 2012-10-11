@@ -2,6 +2,7 @@ package net.sf.dltableau.server.logic.tableau;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import net.sf.dltableau.server.parser.ast.AbstractNode;
@@ -17,15 +18,15 @@ import net.sf.dltableau.server.parser.ast.Parens;
  * @author Federico Ferri
  *
  */
-public class ABOX {
-	private List<AbstractInstance> aList = new ArrayList<AbstractInstance>();
+public class ABOX implements Iterable<AbstractInstance> {
+	protected List<AbstractInstance> aList = new ArrayList<AbstractInstance>();
 	
-	private List<ABOX> children = new ArrayList<ABOX>(2);
-	private ABOX parent = null;
-	private int level = 0;
-	private int childOrdinal = 0;
+	protected final List<ABOX> children = new ArrayList<ABOX>(2);
+	protected final ABOX parent;
+	protected final int level;
+	protected final int childOrdinal;
 	
-	private boolean STRIP_PARENS = true;
+	protected boolean STRIP_PARENS = true;
 
 	public ABOX(ABOX parent) {
 		// double linked tree of ABOXes:
@@ -34,14 +35,15 @@ public class ABOX {
 		
 		// locate level of this ABOX in the ABOX tree
 		ABOX tmp = this;
+		int level_ = 0;
 		while(tmp.parent != null) {
-			level++;
+			level_++;
 			tmp = tmp.parent;
 		}
+		level = level_;
 		
 		// locate ordinal of this ABOX among the siblings
-		if(parent != null)
-			childOrdinal = parent.children.indexOf(this);
+		childOrdinal = (parent != null) ? parent.children.indexOf(this) : 0;
 	}
 	
 	private AbstractNode stripParens(AbstractNode n) {
@@ -56,6 +58,11 @@ public class ABOX {
 		} else {
 			return i;
 		}
+	}
+	
+	@Override
+	public Iterator<AbstractInstance> iterator() {
+		return getInstances().iterator();
 	}
 	
 	public List<AbstractInstance> getInstances() {
