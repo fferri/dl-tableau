@@ -62,16 +62,9 @@ public class Tableau implements Cloneable {
 	}
 	
 	public boolean expandStep() {
-		return expandStepR(abox0);
-	}
-	
-	protected boolean expandStepR(ABOX abox) {
-		if(abox.isLeaf())
-			return expandStep(abox);
-		for(ABOX abox1 : abox.getChildren()) {
-			boolean r = expandStepR(abox1);
-			if(r) return true;
-		}
+		for(ABOX abox1 : getAllBranches())
+			if(expandStep(abox1))
+				return true;
 		return false;
 	}
 	
