@@ -1,9 +1,13 @@
 package net.sf.dltableau.server.parser.ast;
 
 public abstract class AbstractQuantifier extends AbstractNode {
-	protected Atom role;
+	protected final Atom role;
+	protected final AbstractNode expression;
 	
-	protected AbstractNode expression;
+	public AbstractQuantifier(Atom role, AbstractNode expression) {
+		this.role = role;
+		this.expression = expression;
+	}
 	
 	public Atom getRole() {
 		return role;

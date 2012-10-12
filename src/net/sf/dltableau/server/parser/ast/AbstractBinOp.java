@@ -1,9 +1,13 @@
 package net.sf.dltableau.server.parser.ast;
 
 public abstract class AbstractBinOp extends AbstractNode {
-	protected AbstractNode op1;
+	protected final AbstractNode op1;
+	protected final AbstractNode op2;
 	
-	protected AbstractNode op2;
+	public AbstractBinOp(AbstractNode op1, AbstractNode op2) {
+		this.op1 = op1;
+		this.op2 = op2;
+	}
 	
 	public AbstractNode getOp1() {
 		return op1;

@@ -5,9 +5,9 @@ import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.parser.ast.Atom;
 
 public class RoleInstance extends AbstractInstance {
-	protected Atom role;
-	protected int individual1;
-	protected int individual2;
+	protected final Atom role;
+	protected final int individual1;
+	protected final int individual2;
 	
 	public RoleInstance(Atom role, int i1, int i2) {
 		this.role = role;

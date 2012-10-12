@@ -6,6 +6,11 @@ import net.sf.dltableau.server.logic.render.RenderMode;
 public abstract class AbstractNode {
 	public abstract boolean isAtomic();
 	
+	public AbstractNode negate() {
+		if(this instanceof Not) return ((Not)this).getOp();
+		else return new Not(this);
+	}
+	
 	@Override
 	public abstract boolean equals(Object obj);
 	

@@ -2,7 +2,7 @@ package net.sf.dltableau.server.parser.ast;
 
 public class Not extends AbstractUnOp {
 	public Not(AbstractNode op) {
-		this.op = op;
+		super(op);
 	}
 	
 	@Override
