@@ -1,6 +1,7 @@
 package net.sf.dltableau.server.parser.ast;
 
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
+import net.sf.dltableau.server.logic.render.RenderMode;
 
 public abstract class AbstractNode {
 	public abstract boolean isAtomic();
@@ -10,6 +11,10 @@ public abstract class AbstractNode {
 	
 	@Override
 	public String toString() {
-		return ExpressionRenderer.render(this, false);
+		return toString(RenderMode.PLAINTEXT);
+	}
+	
+	public String toString(RenderMode renderMode) {
+		return ExpressionRenderer.render(this, renderMode);
 	}
 }

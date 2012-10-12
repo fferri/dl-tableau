@@ -6,71 +6,68 @@ import net.sf.dltableau.server.logic.tableau.RoleInstance;
 import net.sf.dltableau.server.parser.ast.*;
 
 public class ExpressionRenderer {
-	public static String render(AbstractNode ast, boolean useUnicodeSymbols) {
+	public static String render(AbstractNode ast, RenderMode renderMode) {
 		StringBuilder sb = new StringBuilder();
-		render(ast, useUnicodeSymbols, sb);
+		render(ast, renderMode, sb);
 		return sb.toString();
 	}
 	
-	private static void render(AbstractNode ast, boolean useUnicodeSymbols, StringBuilder sb) {
-		if(ast instanceof Parens) render((Parens)ast, useUnicodeSymbols, sb);
-		else if(ast instanceof AbstractBinOp) render((AbstractBinOp)ast, useUnicodeSymbols, sb);
-		else if(ast instanceof AbstractUnOp) render((AbstractUnOp)ast, useUnicodeSymbols, sb);
-		else if(ast instanceof AbstractQuantifier) render((AbstractQuantifier)ast, useUnicodeSymbols, sb);
-		else if(ast instanceof Atom) render((Atom)ast, useUnicodeSymbols, sb);
+	private static void render(AbstractNode ast, RenderMode renderMode, StringBuilder sb) {
+		if(ast instanceof Parens) render((Parens)ast, renderMode, sb);
+		else if(ast instanceof AbstractBinOp) render((AbstractBinOp)ast, renderMode, sb);
+		else if(ast instanceof AbstractUnOp) render((AbstractUnOp)ast, renderMode, sb);
+		else if(ast instanceof AbstractQuantifier) render((AbstractQuantifier)ast, renderMode, sb);
+		else if(ast instanceof Atom) render((Atom)ast, renderMode, sb);
 		else throw new IllegalArgumentException();
 	}
 	
-	private static void render(AbstractBinOp n, boolean useUnicodeSymbols, StringBuilder sb) {
-		render(n.getOp1(), useUnicodeSymbols, sb);
-		sb.append(OperatorRenderer.render(n, useUnicodeSymbols));
-		render(n.getOp2(), useUnicodeSymbols, sb);
+	private static void render(AbstractBinOp n, RenderMode renderMode, StringBuilder sb) {
+		render(n.getOp1(), renderMode, sb);
+		sb.append(OperatorRenderer.render(n, renderMode));
+		render(n.getOp2(), renderMode, sb);
 	}
 	
-	private static void render(AbstractUnOp n, boolean useUnicodeSymbols, StringBuilder sb) {
-		sb.append(OperatorRenderer.render(n, useUnicodeSymbols));
-		render(n.getOp(), useUnicodeSymbols, sb);
+	private static void render(AbstractUnOp n, RenderMode renderMode, StringBuilder sb) {
+		sb.append(OperatorRenderer.render(n, renderMode));
+		render(n.getOp(), renderMode, sb);
 	}
 	
-	private static void render(AbstractQuantifier n, boolean useUnicodeSymbols, StringBuilder sb) {
-		sb.append(OperatorRenderer.render(n, useUnicodeSymbols));
-		render(n.getRole(), useUnicodeSymbols, sb);
+	private static void render(AbstractQuantifier n, RenderMode renderMode, StringBuilder sb) {
+		sb.append(OperatorRenderer.render(n, renderMode));
+		render(n.getRole(), renderMode, sb);
 		sb.append(".");
-		render(n.getExpression(), useUnicodeSymbols, sb);
+		render(n.getExpression(), renderMode, sb);
 	}
 	
-	private static void render(Parens n, boolean useUnicodeSymbols, StringBuilder sb) {
+	private static void render(Parens n, RenderMode renderMode, StringBuilder sb) {
 		sb.append("(");
-		render(n.getOp(), useUnicodeSymbols, sb);
+		render(n.getOp(), renderMode, sb);
 		sb.append(")");
 	}
 	
-	private static void render(Atom n, boolean useUnicodeSymbols, StringBuilder sb) {
+	private static void render(Atom n, RenderMode renderMode, StringBuilder sb) {
 		sb.append(n.getName());
 	}
 	
-	public static String render(AbstractInstance i, boolean useUnicodeSymbols) {
-		if(i instanceof ConceptInstance) return render((ConceptInstance)i, useUnicodeSymbols);
-		if(i instanceof RoleInstance) return render((RoleInstance)i, useUnicodeSymbols);
+	public static String render(AbstractInstance i, RenderMode renderMode) {
+		if(i instanceof ConceptInstance) return render((ConceptInstance)i, renderMode);
+		if(i instanceof RoleInstance) return render((RoleInstance)i, renderMode);
 		throw new IllegalArgumentException();
 	}
 	
-	public static String render(ConceptInstance i, boolean useUnicodeSymbols) {
+	public static String render(ConceptInstance i, RenderMode renderMode) {
 		AbstractNode concept = i.getConcept();
-		String conceptString = render(concept, useUnicodeSymbols);
+		String conceptString = render(concept, renderMode);
 		return (concept.isAtomic() ? (conceptString) : ("(" + conceptString + ")")) +
-				"(" + getIndividualString(i.getIndividual()) + ")";
+				"(" + IndividualRenderer.render(i.getIndividual(), renderMode) + ")";
 	}
 	
-	public static String render(RoleInstance i, boolean useUnicodeSymbols) {
-		return render(i.getRole(), useUnicodeSymbols) + renderTuple(i, useUnicodeSymbols);
+	public static String render(RoleInstance i, RenderMode renderMode) {
+		return render(i.getRole(), renderMode) + renderTuple(i, renderMode);
 	}
 	
-	public static String renderTuple(RoleInstance i, boolean useUnicodeSymbols) {
-		return "(" + getIndividualString(i.getIndividual1()) + "," + getIndividualString(i.getIndividual2()) + ")";
-	}
-
-	public static String getIndividualString(int i) {
-		return String.format("%c", 'a' + i);
+	public static String renderTuple(RoleInstance i, RenderMode renderMode) {
+		return "(" + IndividualRenderer.render(i.getIndividual1(), renderMode) + ","
+				+ IndividualRenderer.render(i.getIndividual2(), renderMode) + ")";
 	}
 }

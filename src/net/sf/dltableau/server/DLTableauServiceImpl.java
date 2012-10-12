@@ -5,6 +5,7 @@ import java.util.Date;
 import net.sf.dltableau.client.DLTableauService;
 import net.sf.dltableau.server.logic.render.ASTRenderer;
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
+import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.logic.tableau.ABOX;
 import net.sf.dltableau.server.logic.tableau.AbstractInstance;
 import net.sf.dltableau.server.logic.tableau.Tableau;
@@ -47,10 +48,10 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			throw new RuntimeException("Parse exception: " + ex.getMessage());
 		}
 
-		ret.original = ExpressionRenderer.render(concept0, options.isUseUnicodeSymbols());
+		ret.original = ExpressionRenderer.render(concept0, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		
 		concept = Transform.pushNotInside(concept0);
-		ret.nnf = ExpressionRenderer.render(concept, options.isUseUnicodeSymbols());
+		ret.nnf = ExpressionRenderer.render(concept, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		Tableau tableau = new Tableau();
 		tableau.init(concept);
 		tableau.expand();
@@ -62,7 +63,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	private DLTableauNode buildABOXTree(ABOX abox, DLTableauOptions options) {
 		DLTableauNode n = new DLTableauNode();
 		for(AbstractInstance i : abox.getInstances()) {
-			n.expr.add(ExpressionRenderer.render(i, options.isUseUnicodeSymbols()));
+			n.expr.add(ExpressionRenderer.render(i, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT));
 		}
 		if(abox.isLeaf() && abox.containsClash()) {
 			DLTableauNode clashMarker = new DLTableauNode();
@@ -80,7 +81,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	public String syntaxTree(String formula, DLTableauOptions options) throws Exception {
 		try {
 			AbstractNode concept = DLLiteParser.parse(formula);
-			return ASTRenderer.render(concept, options.isUseUnicodeSymbols(), true);
+			return ASTRenderer.render(concept, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		} catch(ParseException e) {
 			throw new RuntimeException("Parse exception: " + e.getMessage());
 		}
