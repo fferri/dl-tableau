@@ -5,8 +5,8 @@ import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.parser.ast.*;
 
 public class ConceptInstance extends AbstractInstance {
-	protected AbstractNode concept;
-	protected int individual;
+	protected final AbstractNode concept;
+	protected final int individual;
 	
 	public ConceptInstance(AbstractNode concept, int individual) {
 		this.concept = concept;
@@ -22,10 +22,7 @@ public class ConceptInstance extends AbstractInstance {
 	}
 	
 	public ConceptInstance negatedInstance() {
-		if(concept instanceof Not)
-			return new ConceptInstance(((Not)concept).getOp(), individual);
-		else
-			return new ConceptInstance(new Not(concept), individual);
+		return new ConceptInstance(concept.negate(), individual);
 	}
 	
 	public int getIndividual() {

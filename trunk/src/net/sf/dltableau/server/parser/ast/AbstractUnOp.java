@@ -3,6 +3,10 @@ package net.sf.dltableau.server.parser.ast;
 public abstract class AbstractUnOp extends AbstractNode {
 	protected AbstractNode op;
 	
+	public AbstractUnOp(AbstractNode op) {
+		this.op = op;
+	}
+	
 	public AbstractNode getOp() {
 		return op;
 	}
