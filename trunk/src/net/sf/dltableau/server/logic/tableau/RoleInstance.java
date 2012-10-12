@@ -1,6 +1,7 @@
 package net.sf.dltableau.server.logic.tableau;
 
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
+import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.parser.ast.Atom;
 
 public class RoleInstance extends AbstractInstance {
@@ -25,9 +26,13 @@ public class RoleInstance extends AbstractInstance {
 	public Atom getRole() {
 		return role;
 	}
-	
+
 	public String toString() {
-		return ExpressionRenderer.render(this, false);
+		return toString(RenderMode.PLAINTEXT);
+	}
+	
+	public String toString(RenderMode renderMode) {
+		return ExpressionRenderer.render(this, renderMode);
 	}
 	
 	@Override

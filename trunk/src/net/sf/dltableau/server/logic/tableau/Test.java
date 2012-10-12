@@ -11,6 +11,8 @@ import java.util.Map;
 
 import net.sf.dltableau.server.logic.render.ASTRenderer;
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
+import net.sf.dltableau.server.logic.render.IndividualRenderer;
+import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.parser.DLLiteParser;
 import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.*;
@@ -21,6 +23,8 @@ public class Test {
 	private static final boolean STEP_BY_STEP_EXPANSION = false;
 	private static final boolean PRINT_ALL_MODELS = true;
 	
+	private static final RenderMode renderMode = RenderMode.UNICODE;
+	
 	private static final String examples[] = {
 		"not(exists X. (C and D and (E or F and G)) and forall X.(not C))",
 		"exists R. (forall S. C) and forall R. (exists S. not C)",
@@ -30,15 +34,15 @@ public class Test {
 	
 	public static void main(String[] args) throws ParseException {
 		AbstractNode concept = DLLiteParser.parse(examples[0]);
-		out.println("Concept string (parsed): " + concept);
+		out.println("Concept string (parsed): " + ExpressionRenderer.render(concept, renderMode));
 		concept = Transform.pushNotInside(concept);
 		
 		if(PRINT_ABSTRACT_SYNTAX_TREE) {
-			out.println("Syntax tree:\n" + ASTRenderer.render(concept, false, false));
+			out.println("Syntax tree:\n" + ASTRenderer.render(concept, renderMode));
 		}
 		
 		if(PRINT_NEGATION_NORMAL_FORM) {
-			out.println("Negation normal form of concept: " + concept);
+			out.println("Negation normal form of concept: " + ExpressionRenderer.render(concept, renderMode));
 		}
 		
 		Tableau tableau = new Tableau();
@@ -90,16 +94,16 @@ public class Test {
 		List<Integer> allI = abox.getAllIndividuals();
 		StringBuilder domSB = new StringBuilder();
 		for(Integer i : allI)
-			domSB.append(domSB.length() == 0 ? "" : ", ").append(ExpressionRenderer.getIndividualString(i));
+			domSB.append(domSB.length() == 0 ? "" : ", ").append(IndividualRenderer.render(i, renderMode));
 		System.out.println("DOMAIN = {" + domSB + "}");
 		for(Map.Entry<Atom, List<AbstractInstance>> e : modelMap.entrySet()) {
 			StringBuilder sb = new StringBuilder();
 			for(AbstractInstance ai : e.getValue()) {
 				sb.append(sb.length() == 0 ? "" : ", ");
 				if(ai instanceof ConceptInstance)
-					sb.append(ExpressionRenderer.getIndividualString(((ConceptInstance)ai).getIndividual()));
+					sb.append(IndividualRenderer.render(((ConceptInstance)ai).getIndividual(), renderMode));
 				else if(ai instanceof RoleInstance)
-					sb.append(ExpressionRenderer.renderTuple(((RoleInstance)ai), false));
+					sb.append(ExpressionRenderer.renderTuple(((RoleInstance)ai), renderMode));
 			}
 			System.out.println(e.getKey() + " = {" + sb + "}");
 		}

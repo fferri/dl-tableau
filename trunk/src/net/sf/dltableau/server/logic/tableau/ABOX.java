@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.parser.ast.AbstractNode;
 import net.sf.dltableau.server.parser.ast.Atom;
 import net.sf.dltableau.server.parser.ast.Parens;
@@ -182,15 +183,30 @@ public class ABOX implements Iterable<AbstractInstance> {
 	}
 	
 	public String toString() {
+		return toString(RenderMode.PLAINTEXT);
+	}
+	
+	public String toString(RenderMode renderMode) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getName()).append(" = ");
 		if(parent != null) sb.append(parent.getName()).append(" U ");
-		sb.append(aList.toString());
+		sb.append("{");
+		boolean first = true;
+		for(AbstractInstance n : aList) {
+			if(first) first = false;
+			else sb.append(", ");
+			sb.append(n.toString(renderMode));
+		}
+		sb.append("}");
 		if(containsClash()) sb.append(" *");
 		return sb.toString();
 	}
-	
+
 	public String toStringRecursive() {
+		return toStringRecursive(RenderMode.PLAINTEXT);
+	}
+	
+	public String toStringRecursive(RenderMode renderMode) {
 		StringBuilder sb = new StringBuilder();
 		toStringRecursive(sb);
 		return toString() + sb.toString();

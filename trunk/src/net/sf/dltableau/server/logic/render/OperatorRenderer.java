@@ -1,5 +1,8 @@
 package net.sf.dltableau.server.logic.render;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.sf.dltableau.server.parser.ast.AbstractNode;
 import net.sf.dltableau.server.parser.ast.And;
 import net.sf.dltableau.server.parser.ast.Exists;
@@ -10,14 +13,43 @@ import net.sf.dltableau.server.parser.ast.Parens;
 import net.sf.dltableau.server.parser.ast.SubsumedBy;
 
 public class OperatorRenderer {
-	public static String render(AbstractNode n, boolean useUnicodeSymbols) {
-		if(n instanceof And) return useUnicodeSymbols ? " &#x2293; " : " and ";
-		if(n instanceof Or) return useUnicodeSymbols ? " &#x2294; " : " or ";
-		if(n instanceof Not) return useUnicodeSymbols ? "&not;" : "not ";
-		if(n instanceof ForAll) return useUnicodeSymbols ? "&forall;" : "forall ";
-		if(n instanceof Exists) return useUnicodeSymbols ? "&exist;" : "exists ";
-		if(n instanceof SubsumedBy) return useUnicodeSymbols ? "&#x2291;" : " subsumed-by ";
-		if(n instanceof Parens) return "( ... )";
-		throw new IllegalArgumentException();
+	public static String render(AbstractNode n, RenderMode renderMode) {
+		return map.get(renderMode).get(n.getClass());
+	}
+	
+	private static final Map<RenderMode, Map<Class<? extends AbstractNode>, String>> map;
+	
+	static {
+		map = new HashMap<RenderMode, Map<Class<? extends AbstractNode>, String>>();
+		
+		Map<Class<? extends AbstractNode>, String> plaintext = new HashMap<Class<? extends AbstractNode>, String>();
+		plaintext.put(And.class, " and ");
+		plaintext.put(Or.class, " or ");
+		plaintext.put(Not.class, "not ");
+		plaintext.put(ForAll.class, "forall ");
+		plaintext.put(Exists.class, "exists ");
+		plaintext.put(SubsumedBy.class, " subsumed-by ");
+		plaintext.put(Parens.class, "(...)");
+		map.put(RenderMode.PLAINTEXT, plaintext);
+		
+		Map<Class<? extends AbstractNode>, String> unicode = new HashMap<Class<? extends AbstractNode>, String>();
+		unicode.put(And.class, " \u2293 ");
+		unicode.put(Or.class, " \u2294 ");
+		unicode.put(Not.class, "\u00AC");
+		unicode.put(ForAll.class, "\u2200");
+		unicode.put(Exists.class, "\u2203");
+		unicode.put(SubsumedBy.class, " \u2291 ");
+		unicode.put(Parens.class, "(...)");
+		map.put(RenderMode.UNICODE, unicode);
+		
+		Map<Class<? extends AbstractNode>, String> html = new HashMap<Class<? extends AbstractNode>, String>();
+		html.put(And.class, " &#x2293; ");
+		html.put(Or.class, " &#x2294; ");
+		html.put(Not.class, "&not;");
+		html.put(ForAll.class, "&forall;");
+		html.put(Exists.class, "&exist;");
+		html.put(SubsumedBy.class, " &#x2291; ");
+		html.put(Parens.class, "(...)");
+		map.put(RenderMode.HTML, html);
 	}
 }

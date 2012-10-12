@@ -1,6 +1,7 @@
 package net.sf.dltableau.server.logic.tableau;
 
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
+import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.parser.ast.*;
 
 public class ConceptInstance extends AbstractInstance {
@@ -32,7 +33,11 @@ public class ConceptInstance extends AbstractInstance {
 	}
 	
 	public String toString() {
-		return ExpressionRenderer.render(this, false);
+		return toString(RenderMode.PLAINTEXT);
+	}
+	
+	public String toString(RenderMode renderMode) {
+		return ExpressionRenderer.render(this, renderMode);
 	}
 	
 	@Override
