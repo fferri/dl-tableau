@@ -9,13 +9,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.dltableau.server.logic.render.ASTRenderer;
+import net.sf.dltableau.server.logic.render.ExpressionRenderer;
 import net.sf.dltableau.server.parser.DLLiteParser;
 import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.*;
 
 public class Test {
-	private static final boolean PRINT_ABSTRACT_SYNTAX_TREE = false;
-	private static final boolean PRINT_NEGATION_NORMAL_FORM = false;
+	private static final boolean PRINT_ABSTRACT_SYNTAX_TREE = true;
+	private static final boolean PRINT_NEGATION_NORMAL_FORM = true;
 	private static final boolean STEP_BY_STEP_EXPANSION = false;
 	private static final boolean PRINT_ALL_MODELS = true;
 	
@@ -28,11 +30,11 @@ public class Test {
 	
 	public static void main(String[] args) throws ParseException {
 		AbstractNode concept = DLLiteParser.parse(examples[0]);
-		concept = Transform.pushNotInside(concept);
 		out.println("Concept string (parsed): " + concept);
+		concept = Transform.pushNotInside(concept);
 		
 		if(PRINT_ABSTRACT_SYNTAX_TREE) {
-			out.println("Syntax tree:\n" + concept.treeString());
+			out.println("Syntax tree:\n" + ASTRenderer.render(concept, false, false));
 		}
 		
 		if(PRINT_NEGATION_NORMAL_FORM) {
@@ -88,16 +90,16 @@ public class Test {
 		List<Integer> allI = abox.getAllIndividuals();
 		StringBuilder domSB = new StringBuilder();
 		for(Integer i : allI)
-			domSB.append(domSB.length() == 0 ? "" : ", ").append(AbstractInstance.getIndividualString(i));
+			domSB.append(domSB.length() == 0 ? "" : ", ").append(ExpressionRenderer.getIndividualString(i));
 		System.out.println("DOMAIN = {" + domSB + "}");
 		for(Map.Entry<Atom, List<AbstractInstance>> e : modelMap.entrySet()) {
 			StringBuilder sb = new StringBuilder();
 			for(AbstractInstance ai : e.getValue()) {
 				sb.append(sb.length() == 0 ? "" : ", ");
 				if(ai instanceof ConceptInstance)
-					sb.append(AbstractInstance.getIndividualString(((ConceptInstance)ai).getIndividual()));
+					sb.append(ExpressionRenderer.getIndividualString(((ConceptInstance)ai).getIndividual()));
 				else if(ai instanceof RoleInstance)
-					sb.append(((RoleInstance)ai).toString2());
+					sb.append(ExpressionRenderer.renderTuple(((RoleInstance)ai), false));
 			}
 			System.out.println(e.getKey() + " = {" + sb + "}");
 		}

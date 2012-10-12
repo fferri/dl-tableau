@@ -1,5 +1,6 @@
 package net.sf.dltableau.server.logic.tableau;
 
+import net.sf.dltableau.server.logic.render.ExpressionRenderer;
 import net.sf.dltableau.server.parser.ast.*;
 
 public class ConceptInstance extends AbstractInstance {
@@ -30,19 +31,8 @@ public class ConceptInstance extends AbstractInstance {
 		return individual;
 	}
 	
-	protected String conceptString() {
-		if(concept.isAtomic())
-			return concept.toString();
-		else
-			return "(" + concept + ")";
-	}
-	
 	public String toString() {
-		return conceptString() + toString2();
-	}
-	
-	public String toString2() {
-		return "(" + getIndividualString(individual) + ")";
+		return ExpressionRenderer.render(this, false);
 	}
 	
 	@Override

@@ -11,15 +11,6 @@ public class Atom extends AbstractNode {
 		return name;
 	}
 	
-	public String toString() {
-		return name;
-	}
-
-	@Override
-	protected void treeString(int level, StringBuilder builder) {
-		builder.append(indent(level) + "" + name + "\n");
-	}
-	
 	@Override
 	public boolean isAtomic() {
 		return true;

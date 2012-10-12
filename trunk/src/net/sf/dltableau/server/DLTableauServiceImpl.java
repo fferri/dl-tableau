@@ -3,6 +3,8 @@ package net.sf.dltableau.server;
 import java.util.Date;
 
 import net.sf.dltableau.client.DLTableauService;
+import net.sf.dltableau.server.logic.render.ASTRenderer;
+import net.sf.dltableau.server.logic.render.ExpressionRenderer;
 import net.sf.dltableau.server.logic.tableau.ABOX;
 import net.sf.dltableau.server.logic.tableau.AbstractInstance;
 import net.sf.dltableau.server.logic.tableau.Tableau;
@@ -10,7 +12,6 @@ import net.sf.dltableau.server.logic.tableau.Transform;
 import net.sf.dltableau.server.parser.DLLiteParser;
 import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.AbstractNode;
-import net.sf.dltableau.server.parser.ast.SyntaxRenderer;
 import net.sf.dltableau.shared.DLTableauBean;
 import net.sf.dltableau.shared.DLTableauNode;
 import net.sf.dltableau.shared.DLTableauOptions;
@@ -32,7 +33,6 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		e.setProperty("date", new Date());
 		e.setProperty("ip", getThreadLocalRequest().getRemoteAddr());
 		
-		boolean oldUnicodeRenderingVal = SyntaxRenderer.setUseUnicode(false);
 		DLTableauBean ret = new DLTableauBean();
 		AbstractNode concept, concept0;
 		try {
@@ -47,25 +47,22 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			throw new RuntimeException("Parse exception: " + ex.getMessage());
 		}
 
-		SyntaxRenderer.setUseUnicode(options.isUseUnicodeSymbols());
-		ret.original = concept0.toString();
+		ret.original = ExpressionRenderer.render(concept0, options.isUseUnicodeSymbols());
 		
 		concept = Transform.pushNotInside(concept0);
-		ret.nnf = concept.toString();
+		ret.nnf = ExpressionRenderer.render(concept, options.isUseUnicodeSymbols());
 		Tableau tableau = new Tableau();
 		tableau.init(concept);
 		tableau.expand();
-		ret.root = buildABOXTree(tableau.getABOX());
-
-		SyntaxRenderer.setUseUnicode(oldUnicodeRenderingVal);
+		ret.root = buildABOXTree(tableau.getABOX(), options);
 
 		return ret;
 	}
 	
-	private DLTableauNode buildABOXTree(ABOX abox) {
+	private DLTableauNode buildABOXTree(ABOX abox, DLTableauOptions options) {
 		DLTableauNode n = new DLTableauNode();
 		for(AbstractInstance i : abox.getInstances()) {
-			n.expr.add(i.toString());
+			n.expr.add(ExpressionRenderer.render(i, options.isUseUnicodeSymbols()));
 		}
 		if(abox.isLeaf() && abox.containsClash()) {
 			DLTableauNode clashMarker = new DLTableauNode();
@@ -73,7 +70,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			n.child.add(clashMarker);
 		} else {
 			for(ABOX abox1 : abox.getChildren()) {
-				n.child.add(buildABOXTree(abox1));
+				n.child.add(buildABOXTree(abox1, options));
 			}
 		}
 		return n;
@@ -81,19 +78,11 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	
 	@Override
 	public String syntaxTree(String formula, DLTableauOptions options) throws Exception {
-		boolean oldUnicodeRenderingVal = SyntaxRenderer.setUseUnicode(options.isUseUnicodeSymbols());
-
-		AbstractNode concept;
 		try {
-			concept = DLLiteParser.parse(formula);
+			AbstractNode concept = DLLiteParser.parse(formula);
+			return ASTRenderer.render(concept, options.isUseUnicodeSymbols(), true);
 		} catch(ParseException e) {
 			throw new RuntimeException("Parse exception: " + e.getMessage());
 		}
-		
-		String ret = concept.treeString();
-		
-		SyntaxRenderer.setUseUnicode(oldUnicodeRenderingVal);
-
-		return ret;
 	}
 }
