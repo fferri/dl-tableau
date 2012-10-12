@@ -5,9 +5,4 @@ public class And extends AbstractBinOp {
 		this.op1 = op1;
 		this.op2 = op2;
 	}
-
-	@Override
-	protected String opName() {
-		return SyntaxRenderer.AND();
-	}
 }

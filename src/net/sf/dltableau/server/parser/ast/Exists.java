@@ -5,9 +5,4 @@ public class Exists extends AbstractQuantifier {
 		this.role = role;
 		this.expression = expression;
 	}
-
-	@Override
-	protected String quantifierName() {
-		return SyntaxRenderer.EXISTS();
-	}
 }

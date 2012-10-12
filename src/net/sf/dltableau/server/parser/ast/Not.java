@@ -4,11 +4,6 @@ public class Not extends AbstractUnOp {
 	public Not(AbstractNode op) {
 		this.op = op;
 	}
-
-	@Override
-	protected String opName() {
-		return SyntaxRenderer.NOT();
-	}
 	
 	@Override
 	public boolean isAtomic() {
