@@ -19,14 +19,14 @@ import net.sf.dltableau.server.parser.ast.Parens;
  *
  */
 public class ABOX implements Iterable<AbstractInstance> {
-	protected List<AbstractInstance> aList = new ArrayList<AbstractInstance>();
+	protected final List<AbstractInstance> aList = new ArrayList<AbstractInstance>();
 	
 	protected final List<ABOX> children = new ArrayList<ABOX>(2);
 	protected final ABOX parent;
 	protected final int level;
 	protected final int childOrdinal;
 	
-	protected boolean STRIP_PARENS = true;
+	protected static final boolean STRIP_PARENS = true;
 
 	public ABOX(ABOX parent) {
 		// double linked tree of ABOXes:

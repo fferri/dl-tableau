@@ -4,12 +4,8 @@ public class UnmodifiableABOX extends ABOX {
 	// COPY constructor
 	public UnmodifiableABOX(ABOX abox) {
 		super(abox.parent);
-		this.aList = abox.aList;
+		this.aList.addAll(abox.aList);
 		this.children.addAll(abox.children);
-		//this.parent = abox.parent;
-		//this.level = abox.level;
-		//this.childOrdinal = abox.childOrdinal;
-		this.STRIP_PARENS = abox.STRIP_PARENS;
 	}
 	
 	@Override
