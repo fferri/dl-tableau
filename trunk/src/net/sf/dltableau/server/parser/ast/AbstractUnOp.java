@@ -20,4 +20,12 @@ public abstract class AbstractUnOp extends AbstractNode {
 			return false;
 		}
 	}
+	
+	@Override
+	public int hashCode() {
+		int h = 0;
+		h += op.hashCode() * 17;
+		h += getClass().hashCode();
+		return h;
+	}
 }
