@@ -1,4 +1,4 @@
-package net.sf.dltableau.server.logic.tableau;
+package net.sf.dltableau.server.logic.abox;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,20 +1,14 @@
-options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(DLLiteParser)package net.sf.dltableau.server.parser;
+/*GRAMMAR:D -> D <OR> C | CC -> C <AND> N | NN -> <FORALL> A <DOT> F | <EXISTS> A <DOT> F | FF -> <NOT> G | GG -> <PAR_OP> D <PAR_CL> | AA -> <ATOM>K -> T | T <SEMICOLON> K | DT -> A <SUBSUMED_BY> D | A <DEFINED_AS> DTRANSFORMED GRAMMAR: (without direct left recursion and common prefixes)D  -> C D1D1 -> <OR> C D1 | <EPSILON>C  -> N C1C1 -> <AND> N C1 | <EPSILON>N  -> <FORALL> A <DOT> F | <EXISTS> A <DOT> F | FF  -> <NOT> G | GG  -> <PAR_OP> D <PAR_CL> | AA  -> <ATOM>T  -> A T1T1 -> <SUBSUMED_BY> D | <DEFINED_AS> DK  -> T K1 | DK1 -> <EPSILON> | <SEMICOLON> K*/options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(DLLiteParser)package net.sf.dltableau.server.parser;
 import net.sf.dltableau.server.parser.ast.*;import java.io.StringReader;
-public class DLLiteParser{  public static AbstractNode parse(String s) throws ParseException  {    DLLiteParser p = new DLLiteParser(new StringReader(s));    return p.E();  }}PARSER_END(DLLiteParser)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* OPERATORS */{  < SUBSUMED_BY : "subsumed-by" >| < OR : "or" >| < AND : "and" >| < NOT : "not" >
+public class DLLiteParser{  private AbstractNodeList list = new AbstractNodeList();    public static DLLiteParseResult parse(String s) throws ParseException  {    DLLiteParser p = new DLLiteParser(new StringReader(s));    p.K();    return DLLiteParseResult.factory(p.list);  }}PARSER_END(DLLiteParser)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* OPERATORS */{  < SUBSUMED_BY : "subsumed-by" >| < OR : "or" >| < AND : "and" >| < NOT : "not" >
 | < FORALL : "forall" >
 | < EXISTS : "exists" >
 | < DOT : "." >
 | < PAR_OP : "(" >
-| < PAR_CL : ")" >}TOKEN :{  < ATOM : (< CHARUPPERCASE >|< CHARLOWERCASE >)(< CHARUPPERCASE >|< CHARLOWERCASE >|< DIGIT >)* >
+| < PAR_CL : ")" >| < SEMICOLON : ";" >| < DEFINED_AS : "===" >}TOKEN :{  < ATOM : (< CHARUPPERCASE >|< CHARLOWERCASE >)(< CHARUPPERCASE >|< CHARLOWERCASE >|< DIGIT >)* >
 | < #CHARUPPERCASE : [ "A"-"Z" ] >
 | < #CHARLOWERCASE : [ "a"-"z" ] >
-| < #DIGIT : [ "0"-"9" ] >}AbstractNode E() :{  AbstractNode n, r;}
-{
-  n = D() r = E1(n)  {	return r;  }
-}
-
-AbstractNode E1(AbstractNode n) :{  AbstractNode n2, r;  SubsumedBy ssb;}
-{  < SUBSUMED_BY > n2 = D() {ssb = new SubsumedBy(n, n2); } r = E1(ssb)  {	return r;  }  | {return n;}}
+| < #DIGIT : [ "0"-"9" ] >}
 
 AbstractNode D() :{  AbstractNode n, r;}{
   n = C() r = D1(n)  {    return r;  }}
@@ -32,10 +26,11 @@ AbstractNode N() :{  AbstractNode n;  Atom role;}{
   < FORALL > role = A() < DOT > n = F()  {	return new ForAll(role, n);  }    | < EXISTS > role = A() < DOT > n = F()  {	return new Exists(role, n);  }  | n = F()  {    return n;  }}AbstractNode F() :{  AbstractNode n;}{  < NOT > n = G()  {    return new Not(n);  }    | n = G()  {    return n;  }}
 
 AbstractNode G() :{  AbstractNode expr;  Atom atom;}{
-  < PAR_OP > expr = E() < PAR_CL >  {    return new Parens(expr);  }  
+  < PAR_OP > expr = D() < PAR_CL >  {    return new Parens(expr);  }  
   | atom = A()  {    return atom;  }
 }
 
 Atom A() :
 {  Token atomToken;}{
-  atomToken = < ATOM >  {    return new Atom(atomToken.image);  }}
+  atomToken = < ATOM >  {    return new Atom(atomToken.image);  }}AbstractDefinition T() :{  Atom atom;  AbstractDefinition def;}{  atom = A() def = T1(atom)  {	return def;  }}AbstractDefinition T1(Atom atom) :{  AbstractNode n;}{  < SUBSUMED_BY > n = D()  {    return new SubsumedBy(atom, n);  }  | < DEFINED_AS > n = D()  {    return new DefinedAs(atom, n);  }}
+void K() :{  AbstractNode expr;  AbstractDefinition def;}{  LOOKAHEAD(2)  def = T() {list.add(def);} K1()  | expr = D() {list.add(expr);}}void K1() :{}{  [ < SEMICOLON > K() ]}
