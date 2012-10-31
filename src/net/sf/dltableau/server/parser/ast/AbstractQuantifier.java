@@ -31,4 +31,13 @@ public abstract class AbstractQuantifier extends AbstractNode {
 			return false;
 		}
 	}
+	
+	@Override
+	public int hashCode() {
+		int h = 0;
+		h += role.hashCode() * 17;
+		h += expression.hashCode() * 33;
+		h += getClass().hashCode();
+		return h;
+	}
 }

@@ -31,4 +31,13 @@ public abstract class AbstractBinOp extends AbstractNode {
 			return false;
 		}
 	}
+	
+	@Override
+	public int hashCode() {
+		int h = 0;
+		h += op1.hashCode() * 17;
+		h += op2.hashCode() * 33;
+		h += getClass().hashCode();
+		return h;
+	}
 }

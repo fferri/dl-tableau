@@ -24,6 +24,10 @@ public class Atom extends AbstractNode {
 		} else {
 			return false;
 		}
-
+	}
+	
+	@Override
+	public int hashCode() {
+		return 17 * name.hashCode() + getClass().hashCode();
 	}
 }
