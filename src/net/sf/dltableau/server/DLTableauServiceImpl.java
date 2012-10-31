@@ -3,13 +3,16 @@ package net.sf.dltableau.server;
 import java.util.Date;
 
 import net.sf.dltableau.client.DLTableauService;
+import net.sf.dltableau.server.logic.LogicUtils;
+import net.sf.dltableau.server.logic.abox.ABOX;
+import net.sf.dltableau.server.logic.abox.AbstractInstance;
 import net.sf.dltableau.server.logic.render.ASTRenderer;
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
 import net.sf.dltableau.server.logic.render.RenderMode;
-import net.sf.dltableau.server.logic.tableau.ABOX;
-import net.sf.dltableau.server.logic.tableau.AbstractInstance;
 import net.sf.dltableau.server.logic.tableau.Tableau;
-import net.sf.dltableau.server.logic.tableau.Transform;
+import net.sf.dltableau.server.logic.tbox.TBOX;
+import net.sf.dltableau.server.parser.DLLiteParseResult;
+import net.sf.dltableau.server.parser.DLLiteParseResultWithTBOX;
 import net.sf.dltableau.server.parser.DLLiteParser;
 import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.AbstractNode;
@@ -36,8 +39,12 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		
 		DLTableauBean ret = new DLTableauBean();
 		AbstractNode concept, concept0;
+		TBOX tbox = null;
 		try {
-			concept0 = DLLiteParser.parse(formula);
+			DLLiteParseResult r = DLLiteParser.parse(formula);
+			concept0 = r.getFormula();
+			if(r instanceof DLLiteParseResultWithTBOX)
+				tbox = ((DLLiteParseResultWithTBOX)r).getTBOX();
 			e.setProperty("formula", concept0.toString());
 			e.setProperty("ok", true);
 			datastore.put(e);
@@ -50,7 +57,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 
 		ret.original = ExpressionRenderer.render(concept0, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		
-		concept = Transform.pushNotInside(concept0);
+		concept = LogicUtils.toNegationNormalForm(concept0);
 		ret.nnf = ExpressionRenderer.render(concept, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		Tableau tableau = new Tableau();
 		tableau.init(concept);
@@ -80,7 +87,11 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	@Override
 	public String syntaxTree(String formula, DLTableauOptions options) throws Exception {
 		try {
-			AbstractNode concept = DLLiteParser.parse(formula);
+			DLLiteParseResult r = DLLiteParser.parse(formula);
+			AbstractNode concept = r.getFormula();
+			TBOX tbox = null;
+			if(r instanceof DLLiteParseResultWithTBOX)
+				tbox = ((DLLiteParseResultWithTBOX)r).getTBOX();
 			return ASTRenderer.render(concept, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		} catch(ParseException e) {
 			throw new RuntimeException("Parse exception: " + e.getMessage());

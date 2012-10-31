@@ -5,6 +5,7 @@ import java.util.Map;
 
 import net.sf.dltableau.server.parser.ast.AbstractNode;
 import net.sf.dltableau.server.parser.ast.And;
+import net.sf.dltableau.server.parser.ast.DefinedAs;
 import net.sf.dltableau.server.parser.ast.Exists;
 import net.sf.dltableau.server.parser.ast.ForAll;
 import net.sf.dltableau.server.parser.ast.Not;
@@ -29,6 +30,7 @@ public class OperatorRenderer {
 		plaintext.put(ForAll.class, "forall ");
 		plaintext.put(Exists.class, "exists ");
 		plaintext.put(SubsumedBy.class, " subsumed-by ");
+		plaintext.put(DefinedAs.class, " === ");
 		plaintext.put(Parens.class, "(...)");
 		map.put(RenderMode.PLAINTEXT, plaintext);
 		
@@ -39,6 +41,7 @@ public class OperatorRenderer {
 		unicode.put(ForAll.class, "\u2200");
 		unicode.put(Exists.class, "\u2203");
 		unicode.put(SubsumedBy.class, " \u2291 ");
+		unicode.put(DefinedAs.class, " \u2261 ");
 		unicode.put(Parens.class, "(...)");
 		map.put(RenderMode.UNICODE, unicode);
 		
@@ -49,6 +52,7 @@ public class OperatorRenderer {
 		html.put(ForAll.class, "&forall;");
 		html.put(Exists.class, "&exist;");
 		html.put(SubsumedBy.class, " &#x2291; ");
+		html.put(DefinedAs.class, " &#x2261; ");
 		html.put(Parens.class, "(...)");
 		map.put(RenderMode.HTML, html);
 	}

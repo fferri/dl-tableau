@@ -1,4 +1,4 @@
-package net.sf.dltableau.server.logic.tableau;
+package net.sf.dltableau.server.logic.abox;
 
 import net.sf.dltableau.server.logic.render.RenderMode;
 
