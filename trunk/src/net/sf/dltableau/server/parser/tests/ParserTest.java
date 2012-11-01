@@ -4,9 +4,8 @@ import net.sf.dltableau.server.logic.LogicUtils;
 import net.sf.dltableau.server.logic.render.ASTRenderer;
 import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.logic.tbox.TBOX;
-import net.sf.dltableau.server.parser.DLLiteParseResult;
-import net.sf.dltableau.server.parser.DLLiteParseResultWithTBOX;
 import net.sf.dltableau.server.parser.DLLiteParser;
+import net.sf.dltableau.server.parser.DLLiteParser.DLLiteParseResult;
 import net.sf.dltableau.server.parser.ast.*;
 
 public class ParserTest {
@@ -66,11 +65,8 @@ public class ParserTest {
 		try {
 			DLLiteParseResult r = DLLiteParser.parse(formula);
 			AbstractNode ast = r.getFormula();
-			TBOX tbox = null;
-			if(r instanceof DLLiteParseResultWithTBOX) {
-				tbox = ((DLLiteParseResultWithTBOX)r).getTBOX();
-				println("TBOX: " + tbox);
-			}
+			TBOX tbox = r.getTBOX();
+			println("TBOX: " + tbox);
 			
 			println("CONCEPT: " + ast.toString());
 			

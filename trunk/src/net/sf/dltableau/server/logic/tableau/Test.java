@@ -19,9 +19,8 @@ import net.sf.dltableau.server.logic.render.ExpressionRenderer;
 import net.sf.dltableau.server.logic.render.IndividualRenderer;
 import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.logic.tbox.TBOX;
-import net.sf.dltableau.server.parser.DLLiteParseResult;
-import net.sf.dltableau.server.parser.DLLiteParseResultWithTBOX;
 import net.sf.dltableau.server.parser.DLLiteParser;
+import net.sf.dltableau.server.parser.DLLiteParser.DLLiteParseResult;
 import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.*;
 
@@ -34,7 +33,7 @@ public class Test {
 	private static final RenderMode renderMode = RenderMode.PLAINTEXT;
 	
 	private static final String examples[] = {
-		"C === D or E; not(exists X. (C and D and (E or F and G)) and forall X.(not C))",
+		"C = D or E; G subsumed-by D and not E; not(exists X. (C and D and (E or F and G)) and forall X.(not C))",
 		"exists R. (forall S. C) and forall R. (exists S. not C)",
 		"(exists(S.C) and exists(S.D)) and forall(S.(not C or not D))",
 		"exists(R.A) and exists(R.B) and not exists(R.A and B)"
@@ -43,12 +42,9 @@ public class Test {
 	public static void main(String[] args) throws ParseException {
 		DLLiteParseResult r = DLLiteParser.parse(examples[0]);
 		AbstractNode concept = r.getFormula();
-		TBOX tbox = null;
-		if(r instanceof DLLiteParseResultWithTBOX) {
-			tbox = ((DLLiteParseResultWithTBOX)r).getTBOX();
-			concept = tbox.replaceDefinedConcepts(concept);
-		}
+		TBOX tbox = r.getTBOX();
 		out.println("TBOX: " + tbox);
+		concept = tbox.replaceDefinedConcepts(concept);
 		
 		out.println("Concept string (parsed): " + ExpressionRenderer.render(concept, renderMode));
 		concept = LogicUtils.toNegationNormalForm(concept);

@@ -10,10 +10,8 @@ import net.sf.dltableau.server.logic.render.ASTRenderer;
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
 import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.logic.tableau.Tableau;
-import net.sf.dltableau.server.logic.tbox.TBOX;
-import net.sf.dltableau.server.parser.DLLiteParseResult;
-import net.sf.dltableau.server.parser.DLLiteParseResultWithTBOX;
 import net.sf.dltableau.server.parser.DLLiteParser;
+import net.sf.dltableau.server.parser.DLLiteParser.DLLiteParseResult;
 import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.AbstractNode;
 import net.sf.dltableau.shared.DLTableauBean;
@@ -39,13 +37,10 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		
 		DLTableauBean ret = new DLTableauBean();
 		AbstractNode concept, concept0;
-		TBOX tbox = null;
 		try {
 			DLLiteParseResult r = DLLiteParser.parse(formula);
 			concept0 = r.getFormula();
-			if(r instanceof DLLiteParseResultWithTBOX)
-				tbox = ((DLLiteParseResultWithTBOX)r).getTBOX();
-			e.setProperty("formula", concept0.toString());
+			e.setProperty("formula", r.getTBOX() + "; " + concept0.toString());
 			e.setProperty("ok", true);
 			datastore.put(e);
 		} catch(ParseException ex) {
@@ -89,9 +84,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		try {
 			DLLiteParseResult r = DLLiteParser.parse(formula);
 			AbstractNode concept = r.getFormula();
-			TBOX tbox = null;
-			if(r instanceof DLLiteParseResultWithTBOX)
-				tbox = ((DLLiteParseResultWithTBOX)r).getTBOX();
+			//TBOX tbox = r.getTBOX();
 			return ASTRenderer.render(concept, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		} catch(ParseException e) {
 			throw new RuntimeException("Parse exception: " + e.getMessage());
