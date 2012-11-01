@@ -51,10 +51,7 @@ public class TBOX implements Iterable<AbstractDefinition> {
 	}
 	
 	public AbstractNode getDefinitionBody(Atom conceptName) {
-		AbstractNode r = tMapDefinitions.get(conceptName);
-		System.out.println("getDefinitionBody(" + conceptName + ") -> " + r);
-		return r;
-		//return tMapDefinitions.get(conceptName);
+		return tMapDefinitions.get(conceptName);
 	}
 	
 	public AbstractNode getAxiomBody(Atom conceptName) {

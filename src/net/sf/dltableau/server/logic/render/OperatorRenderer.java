@@ -30,7 +30,7 @@ public class OperatorRenderer {
 		plaintext.put(ForAll.class, "forall ");
 		plaintext.put(Exists.class, "exists ");
 		plaintext.put(SubsumedBy.class, " subsumed-by ");
-		plaintext.put(DefinedAs.class, " === ");
+		plaintext.put(DefinedAs.class, " = ");
 		plaintext.put(Parens.class, "(...)");
 		map.put(RenderMode.PLAINTEXT, plaintext);
 		
