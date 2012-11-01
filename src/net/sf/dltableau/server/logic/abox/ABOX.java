@@ -2,8 +2,12 @@ package net.sf.dltableau.server.logic.abox;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.parser.ast.AbstractNode;
@@ -21,6 +25,10 @@ import net.sf.dltableau.server.parser.ast.Parens;
  */
 public class ABOX implements Iterable<AbstractInstance> {
 	protected final List<AbstractInstance> aList = new ArrayList<AbstractInstance>();
+	protected final List<RoleInstance> aListRoles = new ArrayList<RoleInstance>();
+	protected final List<ConceptInstance> aListConcepts = new ArrayList<ConceptInstance>();
+	protected final Map<Individual, AbstractInstance> aMapInstances = new HashMap<Individual, AbstractInstance>();
+	protected final Set<Individual> aSetIndividuals = new HashSet<Individual>();
 	
 	protected final List<ABOX> children = new ArrayList<ABOX>(2);
 	protected final ABOX parent;
@@ -70,6 +78,14 @@ public class ABOX implements Iterable<AbstractInstance> {
 		return Collections.unmodifiableList(aList);
 	}
 	
+	public List<RoleInstance> getRoleInstances() {
+		return Collections.unmodifiableList(aListRoles);
+	}
+	
+	public List<ConceptInstance> getConceptInstances() {
+		return Collections.unmodifiableList(aListConcepts);
+	}
+	
 	public List<ABOX> getChildren() {
 		return Collections.unmodifiableList(children);
 	}
@@ -97,6 +113,18 @@ public class ABOX implements Iterable<AbstractInstance> {
 		if(STRIP_PARENS) i = stripParens(i);
 		if(!contains(i, STRIP_PARENS)) {
 			aList.add(i);
+			if(i instanceof ConceptInstance) {
+				ConceptInstance ci = (ConceptInstance)i;
+				aListConcepts.add(ci);
+				aMapInstances.put(ci.getIndividual(), ci);
+				aSetIndividuals.add(ci.getIndividual());
+			} else if(i instanceof RoleInstance) {
+				RoleInstance ri = (RoleInstance)i;
+				aListRoles.add(ri);
+				aMapInstances.put(ri.getIndividual1(), ri);
+				aSetIndividuals.add(ri.getIndividual1());
+				aSetIndividuals.add(ri.getIndividual2());
+			}
 		}
 	}
 	
@@ -134,52 +162,17 @@ public class ABOX implements Iterable<AbstractInstance> {
 		return false;
 	}
 	
-	public int getNewIndividual() {
-		int max = -1;
-		for(int j = 0; j < size(); j++) {
-			AbstractInstance i = get(j);
-			if(i instanceof ConceptInstance) {
-				ConceptInstance ci = (ConceptInstance)i;
-				max = Math.max(max, ci.getIndividual());
-			} else if(i instanceof RoleInstance) {
-				RoleInstance ri = (RoleInstance)i;
-				max = Math.max(max, Math.max(ri.getIndividual1(), ri.getIndividual2()));
-			}
-		}
-		return max + 1;
+	public List<Individual> getMatchingIndividualsByRole(Atom role, Individual i) {
+		List<RoleInstance> r = RoleInstance.selectRoleInstances(aListRoles, i, null);
+		return RoleInstance.projectIndividuals(r, RoleInstance.Side.S2);
 	}
 	
-	public List<Integer> getMatchingIndividualsByRole(Atom role, int x1) {
-		List<Integer> ret = new ArrayList<Integer>();
-		for(int j = 0; j < size(); j++) {
-			AbstractInstance i = get(j);
-			if(i instanceof RoleInstance) {
-				RoleInstance ri = (RoleInstance)i;
-				if(ri.getIndividual1() == x1 && ri.getRole().equals(role))
-					if(!ret.contains(ri.getIndividual2()))
-						ret.add(ri.getIndividual2());
-			}
-		}
-		return ret;
+	public List<Individual> getAllIndividuals() {
+		return new ArrayList<Individual>(aSetIndividuals);
 	}
 	
-	public List<Integer> getAllIndividuals() {
-		List<Integer> ret = new ArrayList<Integer>();
-		for(int j = 0; j < size(); j++) {
-			AbstractInstance i = get(j);
-			if(i instanceof ConceptInstance) {
-				ConceptInstance ci = (ConceptInstance)i;
-				if(!ret.contains(ci.getIndividual()))
-					ret.add(ci.getIndividual());
-			} else if(i instanceof RoleInstance) {
-				RoleInstance ri = (RoleInstance)i;
-				if(!ret.contains(ri.getIndividual1()))
-					ret.add(ri.getIndividual1());
-				if(!ret.contains(ri.getIndividual2()))
-					ret.add(ri.getIndividual2());
-			}
-		}
-		return ret;
+	public Individual getNewIndividual() {
+		return Individual.newIndividual(this);
 	}
 	
 	public String toString() {

@@ -1,17 +1,19 @@
 package net.sf.dltableau.server.logic.render;
 
+import net.sf.dltableau.server.logic.abox.Individual;
+
 public class IndividualRenderer {
-	public static String render(int individualNumber, RenderMode renderMode) {
-		return render("x", individualNumber, renderMode);
+	public static String render(Individual individual, RenderMode renderMode) {
+		return render("x", individual, renderMode);
 	}
 	
-	public static String render(String base, int individualNumber, RenderMode renderMode) {
+	public static String render(String base, Individual individual, RenderMode renderMode) {
 		if(renderMode.isUnicode())
-			return base + intToStr(individualNumber, unicodeSubscriptDigit);
+			return base + intToStr(individual.ordinal(), unicodeSubscriptDigit);
 		if(renderMode.isHTML())
 			//return base + "<sub>" + individualNumber + "</sub>";
-			return base + intToStr(individualNumber, htmlSubscriptDigit);
-		return base + individualNumber;
+			return base + intToStr(individual.ordinal(), htmlSubscriptDigit);
+		return base + individual.ordinal();
 	}
 	
 	private static String intToStr(int i, String stringDigits[]) {
