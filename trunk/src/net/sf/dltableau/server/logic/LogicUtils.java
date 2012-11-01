@@ -53,4 +53,62 @@ public class LogicUtils {
 			throw new IllegalArgumentException("Cannot handle node of class " + n.getClass());
 		}
 	}
+	
+	public static AbstractNode removeDoubleParentheses(AbstractNode n) {
+		if(n instanceof Not) {
+			Not not = (Not)n;
+			AbstractNode x = not.getOp();
+			
+			if(x instanceof And) {
+				And y = (And)x;
+				return new Or(removeDoubleParentheses(new Not(y.getOp1())), removeDoubleParentheses(new Not(y.getOp2())));
+			} else if(x instanceof Or) {
+				Or y = (Or)x;
+				return new And(removeDoubleParentheses(new Not(y.getOp1())), removeDoubleParentheses(new Not(y.getOp2())));
+			} else if(x instanceof ForAll) {
+				ForAll y = (ForAll)x;
+				return new Exists(y.getRole(), removeDoubleParentheses(new Not(y.getExpression())));
+			} else if(x instanceof Exists) {
+				Exists y = (Exists)x;
+				return new ForAll(y.getRole(), removeDoubleParentheses(new Not(y.getExpression())));
+			} else if(x instanceof Parens) {
+				Parens y = (Parens)x;
+				return new Parens(removeDoubleParentheses(new Not(y.getOp())));
+			} else if(x instanceof Atom){
+				return n;
+			} else if (x instanceof Not) {
+				// cancel double negation
+				Not not2 = (Not)x;
+				return removeDoubleParentheses(not2.getOp());
+			} else {
+				throw new IllegalArgumentException("Cannot handle negation of node of class " + x.getClass());
+			}
+		} else if(n instanceof And) {
+			And m = (And)n;
+			return new And(removeDoubleParentheses(m.getOp1()), removeDoubleParentheses(m.getOp2()));
+		} else if(n instanceof Or) {
+			Or m = (Or)n;
+			return new Or(removeDoubleParentheses(m.getOp1()), removeDoubleParentheses(m.getOp2()));
+		} else if(n instanceof ForAll) {
+			ForAll m = (ForAll)n;
+			return new ForAll(m.getRole(), removeDoubleParentheses(m.getExpression()));
+		} else if(n instanceof Exists) {
+			Exists m = (Exists)n;
+			return new Exists(m.getRole(), removeDoubleParentheses(m.getExpression()));
+		} else if(n instanceof Parens) {
+			Parens m = (Parens)n;
+			while(m.getOp() instanceof Parens) m = (Parens)m.getOp();
+			return new Parens(removeDoubleParentheses(m.getOp()));
+		} else if(n instanceof SubsumedBy) {
+			SubsumedBy m = (SubsumedBy)n;
+			return new SubsumedBy(m.getConcept(), removeDoubleParentheses(m.getDefinition()));
+		} else if(n instanceof DefinedAs) {
+			DefinedAs m = (DefinedAs)n;
+			return new DefinedAs(m.getConcept(), removeDoubleParentheses(m.getDefinition()));
+		} else if(n instanceof Atom) {
+			return n;
+		} else {
+			throw new IllegalArgumentException("Cannot handle node of class " + n.getClass());
+		}	
+	}
 }

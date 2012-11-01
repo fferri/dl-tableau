@@ -3,6 +3,7 @@ package net.sf.dltableau.server.logic.tableau;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.dltableau.server.logic.LogicUtils;
 import net.sf.dltableau.server.logic.abox.ABOX;
 import net.sf.dltableau.server.logic.abox.AbstractInstance;
 import net.sf.dltableau.server.logic.abox.ConceptInstance;
@@ -36,6 +37,10 @@ public class Tableau implements Cloneable {
 	public void init(TBOX tbox, AbstractNode concept) {
 		this.abox0 = new ABOX(null);
 		this.tbox = tbox;
+		
+		concept = tbox.replaceDefinedConcepts(concept);
+		concept = LogicUtils.toNegationNormalForm(concept);
+		concept = LogicUtils.removeDoubleParentheses(concept);
 		
 		Individual x0 = abox0.getNewIndividual();
 		this.abox0.add(new ConceptInstance(concept, x0));

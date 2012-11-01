@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class DLTableau implements EntryPoint {
@@ -27,19 +28,23 @@ public class DLTableau implements EntryPoint {
 	
 	final Button goButton = new Button("Go");
 	final Button astButton = new Button("AST");
+	final TextArea tboxField = new TextArea();
 	final TextBox formulaField = new TextBox();
 	final Label errorLabel = new Label();
 	final HTML outputLabel = new HTML();
 	final CheckBox useUnicode = new CheckBox("Use UNICODE symbols");
 
 	public void onModuleLoad() {
-		//formulaField.setText("exists R. (forall S. C) and forall R. (exists S. not C)");
-		formulaField.setText("not (exists X. (C and D and (E or F and G)) and forall X.(not C))");
+		tboxField.setText("D subsumed-by exists R. C;\nC = D;");
+		formulaField.setText("exists R. D and forall R. (not C)");
 		
-		goButton.addStyleName("sendButton");
+		tboxField.addStyleName("tbox");
 		formulaField.addStyleName("formula");
+		goButton.addStyleName("button");
+		astButton.addStyleName("button");
 
 		// Use RootPanel.get() to get the entire body element
+		RootPanel.get("tboxFieldContainer").add(tboxField);
 		RootPanel.get("nameFieldContainer").add(formulaField);
 		RootPanel.get("sendButtonContainer").add(goButton);
 		RootPanel.get("errorLabelContainer").add(errorLabel);
@@ -90,7 +95,7 @@ public class DLTableau implements EntryPoint {
 		errorLabel.setText("");
 		lockUi(true);
 		tableauService.solve(
-			formulaField.getText(),
+			tboxField.getText() + formulaField.getText(),
 			tableauOptions,
 			new AsyncCallback<DLTableauBean>() {
 				public void onFailure(Throwable e) {
