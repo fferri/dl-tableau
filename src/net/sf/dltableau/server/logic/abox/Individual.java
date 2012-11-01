@@ -1,6 +1,6 @@
 package net.sf.dltableau.server.logic.abox;
 
-import java.util.List;
+import java.util.Set;
 
 import net.sf.dltableau.server.logic.render.IndividualRenderer;
 import net.sf.dltableau.server.logic.render.RenderMode;
@@ -40,15 +40,9 @@ public class Individual {
 	}
 	
 	public static Individual newIndividual(ABOX abox) {
-		List<ConceptInstance> lc = abox.getConceptInstances();
-		List<RoleInstance> lr = abox.getRoleInstances();
-		List<Individual> i1 = ConceptInstance.projectIndividuals(lc),
-				i2 = RoleInstance.projectIndividuals(lr, RoleInstance.Side.S1),
-				i3 = RoleInstance.projectIndividuals(lr, RoleInstance.Side.S2);
+		Set<Individual> is = abox.getIndividuals(true);
 		int max = -1;
-		for(Individual i : i1) if(i.ordinal > max) max = i.ordinal;
-		for(Individual i : i2) if(i.ordinal > max) max = i.ordinal;
-		for(Individual i : i3) if(i.ordinal > max) max = i.ordinal;
+		for(Individual i : is) if(i.ordinal > max) max = i.ordinal;
 		return new Individual(max + 1);
 	}
 }

@@ -35,8 +35,11 @@ public class Tableau implements Cloneable {
 	
 	public void init(TBOX tbox, AbstractNode concept) {
 		this.abox0 = new ABOX(null);
-		this.abox0.add(new ConceptInstance(concept, abox0.getNewIndividual()));
 		this.tbox = tbox;
+		
+		Individual x0 = abox0.getNewIndividual();
+		this.abox0.add(new ConceptInstance(concept, x0));
+		addTBOXAxioms(x0, abox0);
 	}
 	
 	public TBOX getTBOX() {
@@ -45,6 +48,11 @@ public class Tableau implements Cloneable {
 	
 	public ABOX getABOX() {
 		return new UnmodifiableABOX(abox0);
+	}
+	
+	private void addTBOXAxioms(Individual i, ABOX abox) {
+		for(Or x : tbox.getNormalFormAxioms())
+			abox.add(new ConceptInstance(x, i));
 	}
 	
 	public List<ABOX> getAllBranches() {
@@ -154,6 +162,7 @@ public class Tableau implements Cloneable {
 	}
 	
 	protected boolean expandStep(Exists exists, Individual x1, ABOX abox) {
+		if(blocked(x1, abox)) return false;
 		// selects x2 in R(x1,x2):
 		List<Individual> l = abox.getMatchingIndividualsByRole(exists.getRole(), x1);
 		
@@ -168,6 +177,7 @@ public class Tableau implements Cloneable {
 		ABOX a1 = new ABOX(abox);
 		a1.add(ci1);
 		a1.add(ri1);
+		addTBOXAxioms(newIndividual, a1);
 		return true;
 	}
 	
@@ -184,5 +194,22 @@ public class Tableau implements Cloneable {
 	
 	public void expand() {
 		while(expandStep());
+	}
+	
+	/**
+	 * Check BLOCKING condition (i.e. find a superset of concept instances in i
+	 * in the ancestors of i.
+	 * @param i
+	 * @return
+	 */
+	protected boolean blocked(Individual i, ABOX abox) {
+		List<ConceptInstance> cl = abox.getConceptInstancesByIndividual(i, true);
+		List<Individual> ancestors = abox.getAncestors(i);
+		for(Individual ancestor : ancestors) {
+			List<ConceptInstance> acl = abox.getConceptInstancesByIndividual(ancestor, true);
+			if(ConceptInstance.isSupersetOf(acl, cl))
+				return true;
+		}
+		return false;
 	}
 }

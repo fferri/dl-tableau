@@ -64,7 +64,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	
 	private DLTableauNode buildABOXTree(ABOX abox, DLTableauOptions options) {
 		DLTableauNode n = new DLTableauNode();
-		for(AbstractInstance i : abox.getInstances()) {
+		for(AbstractInstance i : abox.getInstances(false)) {
 			n.expr.add(ExpressionRenderer.render(i, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT));
 		}
 		if(abox.isLeaf() && abox.containsClash()) {

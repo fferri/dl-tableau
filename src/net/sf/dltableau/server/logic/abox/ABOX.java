@@ -1,18 +1,13 @@
 package net.sf.dltableau.server.logic.abox;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.dltableau.server.logic.render.RenderMode;
-import net.sf.dltableau.server.parser.ast.AbstractNode;
 import net.sf.dltableau.server.parser.ast.Atom;
-import net.sf.dltableau.server.parser.ast.Parens;
 
 /**
  * Model of an ABOX, containing instances (of concepts and of roles).
@@ -25,17 +20,14 @@ import net.sf.dltableau.server.parser.ast.Parens;
  */
 public class ABOX implements Iterable<AbstractInstance> {
 	protected final List<AbstractInstance> aList = new ArrayList<AbstractInstance>();
-	protected final List<RoleInstance> aListRoles = new ArrayList<RoleInstance>();
 	protected final List<ConceptInstance> aListConcepts = new ArrayList<ConceptInstance>();
-	protected final Map<Individual, AbstractInstance> aMapInstances = new HashMap<Individual, AbstractInstance>();
-	protected final Set<Individual> aSetIndividuals = new HashSet<Individual>();
+	protected final List<RoleInstance> aListRoles = new ArrayList<RoleInstance>();
+    protected final Set<Individual> aSetIndividuals = new HashSet<Individual>();
 	
 	protected final List<ABOX> children = new ArrayList<ABOX>(2);
 	protected final ABOX parent;
 	protected final int level;
 	protected final int childOrdinal;
-	
-	protected static final boolean STRIP_PARENS = true;
 
 	public ABOX(ABOX parent) {
 		// double linked tree of ABOXes:
@@ -55,39 +47,50 @@ public class ABOX implements Iterable<AbstractInstance> {
 		childOrdinal = (parent != null) ? parent.children.indexOf(this) : 0;
 	}
 	
-	private AbstractNode stripParens(AbstractNode n) {
-		while(n instanceof Parens) n = ((Parens)n).getOp();
-		return n;
-	}
-	
-	private AbstractInstance stripParens(AbstractInstance i) {
-		if(i instanceof ConceptInstance) {
-			ConceptInstance ci = (ConceptInstance)i;
-			return new ConceptInstance(stripParens(ci.getConcept()), ci.getIndividual());
-		} else {
-			return i;
-		}
-	}
-	
 	@Override
 	public Iterator<AbstractInstance> iterator() {
-		return getInstances().iterator();
+		return getInstances(true).iterator();
 	}
 	
-	public List<AbstractInstance> getInstances() {
-		return Collections.unmodifiableList(aList);
+	public List<AbstractInstance> getInstances(boolean recursively) {
+		List<AbstractInstance> r = new ArrayList<AbstractInstance>();
+		r.addAll(aList);
+		if(recursively && parent != null) r.addAll(parent.getInstances(true));
+		return r;
 	}
 	
-	public List<RoleInstance> getRoleInstances() {
-		return Collections.unmodifiableList(aListRoles);
+	public List<ConceptInstance> getConceptInstances(boolean recursively) {
+		List<ConceptInstance> r = new ArrayList<ConceptInstance>();
+		r.addAll(aListConcepts);
+		if(recursively && parent != null) r.addAll(parent.getConceptInstances(true));
+		return r;
 	}
 	
-	public List<ConceptInstance> getConceptInstances() {
-		return Collections.unmodifiableList(aListConcepts);
+	public List<ConceptInstance> getConceptInstancesByIndividual(Individual i, boolean recursively) {
+		List<ConceptInstance> r = new ArrayList<ConceptInstance>();
+		for(ConceptInstance inst : aListConcepts)
+			if(inst.getIndividual().equals(i))
+				r.add(inst);
+		if(recursively && parent != null) r.addAll(parent.getConceptInstancesByIndividual(i, true));
+		return r;
+	}
+	
+	public List<RoleInstance> getRoleInstances(boolean recursively) {
+		List<RoleInstance> r = new ArrayList<RoleInstance>();
+		r.addAll(aListRoles);
+		if(recursively && parent != null) r.addAll(parent.getRoleInstances(true));
+		return r;
+	}
+	
+	public Set<Individual> getIndividuals(boolean recursively) {
+		Set<Individual> r = new HashSet<Individual>();
+		r.addAll(aSetIndividuals);
+		if(recursively && parent != null) r.addAll(parent.getIndividuals(true));
+		return r;
 	}
 	
 	public List<ABOX> getChildren() {
-		return Collections.unmodifiableList(children);
+		return children;
 	}
 	
 	public boolean isLeaf() {
@@ -110,27 +113,44 @@ public class ABOX implements Iterable<AbstractInstance> {
 	}
 
 	public void add(AbstractInstance i) {
-		if(STRIP_PARENS) i = stripParens(i);
-		if(!contains(i, STRIP_PARENS)) {
-			aList.add(i);
-			if(i instanceof ConceptInstance) {
-				ConceptInstance ci = (ConceptInstance)i;
-				aListConcepts.add(ci);
-				aMapInstances.put(ci.getIndividual(), ci);
-				aSetIndividuals.add(ci.getIndividual());
-			} else if(i instanceof RoleInstance) {
-				RoleInstance ri = (RoleInstance)i;
-				aListRoles.add(ri);
-				aMapInstances.put(ri.getIndividual1(), ri);
-				aSetIndividuals.add(ri.getIndividual1());
-				aSetIndividuals.add(ri.getIndividual2());
-			}
+		if(i instanceof ConceptInstance) {
+			ConceptInstance ci = (ConceptInstance)i;
+			addConceptInstance(ci);
+		} else if(i instanceof RoleInstance) {
+			RoleInstance ri = (RoleInstance)i;
+			addRoleInstance(ri);
 		}
+	}
+	
+	private void addConceptInstance(ConceptInstance ci) {
+		ci = ci.removeParentheses();
+		if(contains(ci)) return;
+		aList.add(ci);
+		aListConcepts.add(ci);
+		aSetIndividuals.add(ci.getIndividual());
+	}
+	
+	private void addRoleInstance(RoleInstance ri) {
+		if(contains(ri)) return;
+		aList.add(ri);
+		aListRoles.add(ri);
+		aSetIndividuals.add(ri.getIndividual1());
+		aSetIndividuals.add(ri.getIndividual2());
 	}
 	
 	public int size() {
 		return aList.size() +
 			(parent != null ? parent.size() : 0);
+	}
+	
+	public int getNumConceptInstances() {
+		return aListConcepts.size() +
+			(parent != null ? parent.getNumConceptInstances() : 0);
+	}
+	
+	public int getNumRoleInstances() {
+		return aListRoles.size() +
+			(parent != null ? parent.getNumRoleInstances() : 0);
 	}
 	
 	public AbstractInstance get(int i) {
@@ -140,14 +160,41 @@ public class ABOX implements Iterable<AbstractInstance> {
 		return parent.get(i - aList.size());
 	}
 	
-	public boolean contains(AbstractInstance i) {
-		if(STRIP_PARENS) i = stripParens(i);
-		return contains(i, STRIP_PARENS);
+	public ConceptInstance getConceptInstance(int i) {
+		if(i < 0) throw new ArrayIndexOutOfBoundsException();
+		if(i < aListConcepts.size()) return aListConcepts.get(i);
+		if(parent == null) throw new ArrayIndexOutOfBoundsException();
+		return parent.getConceptInstance(i - aListConcepts.size());
 	}
 	
-	private boolean contains(AbstractInstance i, boolean stripParens) {
-		return aList.contains(i) ||
-				(parent != null ? parent.contains(i, stripParens) : false);
+	public RoleInstance getRoleInstance(int i) {
+		if(i < 0) throw new ArrayIndexOutOfBoundsException();
+		if(i < aListRoles.size()) return aListRoles.get(i);
+		if(parent == null) throw new ArrayIndexOutOfBoundsException();
+		return parent.getRoleInstance(i - aListRoles.size());
+	}
+	
+	public boolean contains(AbstractInstance i) {
+		if(i instanceof ConceptInstance) {
+			ConceptInstance ci = (ConceptInstance)i;
+			return containsConceptInstance(ci);
+		} else if(i instanceof RoleInstance) {
+			RoleInstance ri = (RoleInstance)i;
+			return containsRoleInstance(ri);
+		} else {
+			return false;
+		}
+	}
+	
+	private boolean containsConceptInstance(ConceptInstance ci) {
+		ci = ci.removeParentheses();
+		return aListConcepts.contains(ci) ||
+				(parent != null ? parent.containsConceptInstance(ci) : false);
+	}
+	
+	private boolean containsRoleInstance(RoleInstance ri) {
+		return aListRoles.contains(ri) ||
+				(parent != null ? parent.containsRoleInstance(ri) : false);
 	}
 	
 	public boolean containsClash() {
@@ -163,16 +210,26 @@ public class ABOX implements Iterable<AbstractInstance> {
 	}
 	
 	public List<Individual> getMatchingIndividualsByRole(Atom role, Individual i) {
-		List<RoleInstance> r = RoleInstance.selectRoleInstances(aListRoles, i, null);
+		List<RoleInstance> r = RoleInstance.selectRoleInstances(getRoleInstances(true), i, null);
 		return RoleInstance.projectIndividuals(r, RoleInstance.Side.S2);
-	}
-	
-	public List<Individual> getAllIndividuals() {
-		return new ArrayList<Individual>(aSetIndividuals);
 	}
 	
 	public Individual getNewIndividual() {
 		return Individual.newIndividual(this);
+	}
+	
+	public List<Individual> getAncestors(Individual i) {
+		Set<Individual> s = new HashSet<Individual>();
+		getAncestors(i, getRoleInstances(true), s);
+		return new ArrayList<Individual>(s);
+	}
+	
+	private void getAncestors(Individual i, List<RoleInstance> allRoleInstances, Set<Individual> result) {
+		List<RoleInstance> l = RoleInstance.selectRoleInstances(allRoleInstances, null, i);
+		List<Individual> a1 = RoleInstance.projectIndividuals(l, RoleInstance.Side.S1);
+		result.addAll(a1);
+		for(Individual i1 : a1)
+			getAncestors(i1, allRoleInstances, result);
 	}
 	
 	public String toString() {
@@ -207,7 +264,9 @@ public class ABOX implements Iterable<AbstractInstance> {
 	
 	private String toStringRecursive(StringBuilder sb) {
 		for(ABOX abox : children) {
-			sb.append("\n").append(abox.toString());
+			sb.append("\n");
+			for(int i = 0; i < abox.getLevel(); i++) sb.append("  ");
+			sb.append(abox.toString());
 			abox.toStringRecursive(sb);
 		}
 		return sb.toString();

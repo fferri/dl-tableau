@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.dltableau.server.logic.LogicUtils;
 import net.sf.dltableau.server.logic.abox.ABOX;
@@ -28,12 +29,13 @@ import net.sf.dltableau.server.parser.ast.*;
 public class Test {
 	private static final boolean PRINT_ABSTRACT_SYNTAX_TREE = true;
 	private static final boolean PRINT_NEGATION_NORMAL_FORM = true;
-	private static final boolean STEP_BY_STEP_EXPANSION = false;
+	private static final boolean STEP_BY_STEP_EXPANSION = true;
 	private static final boolean PRINT_ALL_MODELS = true;
 	
 	private static final RenderMode renderMode = RenderMode.PLAINTEXT;
 	
 	private static final String examples[] = {
+		"D subsumed-by exists R. C; exists R. D and forall R. (not C)",
 		"C = D or E; G subsumed-by D and not E; not(exists X. (C and D and (E or F and G)) and forall X.(not C))",
 		"exists R. (forall S. C) and forall R. (exists S. not C)",
 		"(exists(S.C) and exists(S.D)) and forall(S.(not C or not D))",
@@ -59,7 +61,7 @@ public class Test {
 		}
 		
 		Tableau tableau = new Tableau();
-		tableau.init(concept);
+		tableau.init(tbox, concept);
 		
 		if(STEP_BY_STEP_EXPANSION) {
 			while(true) {
@@ -104,7 +106,7 @@ public class Test {
 				modelMap.get(a).add(ri);
 			}
 		}
-		List<Individual> allI = abox.getAllIndividuals();
+		Set<Individual> allI = abox.getIndividuals(true);
 		StringBuilder domSB = new StringBuilder();
 		for(Individual i : allI)
 			domSB.append(domSB.length() == 0 ? "" : ", ").append(IndividualRenderer.render(i, renderMode));

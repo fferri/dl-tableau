@@ -1,6 +1,7 @@
 package net.sf.dltableau.server.logic.abox;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
@@ -28,6 +29,12 @@ public class ConceptInstance extends AbstractInstance {
 		return new ConceptInstance(concept.negate(), individual);
 	}
 	
+	public ConceptInstance removeParentheses() {
+		AbstractNode tmp = concept;
+		while(tmp instanceof Parens) tmp = ((Parens)tmp).getOp();
+		return new ConceptInstance(tmp, individual);
+	}
+	
 	public Individual getIndividual() {
 		return individual;
 	}
@@ -46,11 +53,20 @@ public class ConceptInstance extends AbstractInstance {
 	 * @param l list of ConceptInstances
 	 * @return list of individuals involved
 	 */
-	public static List<Individual> projectIndividuals(List<ConceptInstance> l) {
+	public static List<Individual> projectIndividuals(Collection<ConceptInstance> l) {
 		List<Individual> r = new ArrayList<Individual>();
 		for(ConceptInstance ci : l) {
 			Individual i = ci.getIndividual();
 			if(!r.contains(i)) r.add(i);
+		}
+		return r;
+	}
+	
+	public static List<AbstractNode> projectConcepts(Collection<ConceptInstance> l) {
+		List<AbstractNode> r = new ArrayList<AbstractNode>();
+		for(ConceptInstance ci : l) {
+			AbstractNode n = ci.getConcept();
+			if(!r.contains(n)) r.add(n);
 		}
 		return r;
 	}
@@ -68,5 +84,14 @@ public class ConceptInstance extends AbstractInstance {
 	@Override
 	public int hashCode() {
 		return concept.hashCode() + 17 * individual.hashCode();
+	}
+	
+	public static boolean isSupersetOf(Collection<ConceptInstance> superSet, Collection<ConceptInstance> subSet) {
+		List<AbstractNode> superSetC = projectConcepts(superSet);
+		List<AbstractNode> subSetC = projectConcepts(subSet);
+		for(AbstractNode i : subSetC)
+			if(!superSetC.contains(i))
+				return false;
+		return true;
 	}
 }
