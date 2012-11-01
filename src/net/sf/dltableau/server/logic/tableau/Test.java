@@ -28,14 +28,13 @@ import net.sf.dltableau.server.parser.ast.*;
 
 public class Test {
 	private static final boolean PRINT_ABSTRACT_SYNTAX_TREE = true;
-	private static final boolean PRINT_NEGATION_NORMAL_FORM = true;
 	private static final boolean STEP_BY_STEP_EXPANSION = true;
 	private static final boolean PRINT_ALL_MODELS = true;
 	
 	private static final RenderMode renderMode = RenderMode.PLAINTEXT;
 	
 	private static final String examples[] = {
-		"D subsumed-by exists R. C; exists R. D and forall R. (not C)",
+		"D subsumed-by exists R. C; C = D; exists R. D and forall R. (not C)",
 		"C = D or E; G subsumed-by D and not E; not(exists X. (C and D and (E or F and G)) and forall X.(not C))",
 		"exists R. (forall S. C) and forall R. (exists S. not C)",
 		"(exists(S.C) and exists(S.D)) and forall(S.(not C or not D))",
@@ -46,18 +45,12 @@ public class Test {
 		DLLiteParseResult r = DLLiteParser.parse(examples[0]);
 		AbstractNode concept = r.getFormula();
 		TBOX tbox = r.getTBOX();
-		out.println("TBOX: " + tbox);
-		concept = tbox.replaceDefinedConcepts(concept);
-		
+		out.println("TBOX: " + tbox);		
 		out.println("Concept string (parsed): " + ExpressionRenderer.render(concept, renderMode));
 		concept = LogicUtils.toNegationNormalForm(concept);
 		
 		if(PRINT_ABSTRACT_SYNTAX_TREE) {
 			out.println("Syntax tree:\n" + ASTRenderer.render(concept, renderMode));
-		}
-		
-		if(PRINT_NEGATION_NORMAL_FORM) {
-			out.println("Negation normal form of concept: " + ExpressionRenderer.render(concept, renderMode));
 		}
 		
 		Tableau tableau = new Tableau();
@@ -77,7 +70,7 @@ public class Test {
 		if(PRINT_ALL_MODELS) {
 			List<ABOX> openBranches = tableau.getOpenBranches();
 			if(openBranches.isEmpty())
-				out.println("Tableau is closed. No model available.");
+				out.println("Tableau is closed. No model exists.");
 			else for(int i = 0; i < openBranches.size(); i++) {
 				out.println("-------- Model #" + i + ": ----------------");
 				//out.print(openBranches.get(i));

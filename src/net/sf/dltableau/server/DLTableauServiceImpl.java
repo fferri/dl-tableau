@@ -3,13 +3,13 @@ package net.sf.dltableau.server;
 import java.util.Date;
 
 import net.sf.dltableau.client.DLTableauService;
-import net.sf.dltableau.server.logic.LogicUtils;
 import net.sf.dltableau.server.logic.abox.ABOX;
 import net.sf.dltableau.server.logic.abox.AbstractInstance;
 import net.sf.dltableau.server.logic.render.ASTRenderer;
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
 import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.logic.tableau.Tableau;
+import net.sf.dltableau.server.logic.tbox.TBOX;
 import net.sf.dltableau.server.parser.DLLiteParser;
 import net.sf.dltableau.server.parser.DLLiteParser.DLLiteParseResult;
 import net.sf.dltableau.server.parser.ParseException;
@@ -36,11 +36,13 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		e.setProperty("ip", getThreadLocalRequest().getRemoteAddr());
 		
 		DLTableauBean ret = new DLTableauBean();
-		AbstractNode concept, concept0;
+		AbstractNode concept;
+		TBOX tbox;
 		try {
 			DLLiteParseResult r = DLLiteParser.parse(formula);
-			concept0 = r.getFormula();
-			e.setProperty("formula", r.getTBOX() + "; " + concept0.toString());
+			concept = r.getFormula();
+			tbox = r.getTBOX();
+			e.setProperty("formula", formula);
 			e.setProperty("ok", true);
 			datastore.put(e);
 		} catch(ParseException ex) {
@@ -50,12 +52,11 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			throw new RuntimeException("Parse exception: " + ex.getMessage());
 		}
 
-		ret.original = ExpressionRenderer.render(concept0, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
+		ret.original = ExpressionRenderer.render(concept, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		
-		concept = LogicUtils.toNegationNormalForm(concept0);
 		ret.nnf = ExpressionRenderer.render(concept, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		Tableau tableau = new Tableau();
-		tableau.init(concept);
+		tableau.init(tbox, concept);
 		tableau.expand();
 		ret.root = buildABOXTree(tableau.getABOX(), options);
 
