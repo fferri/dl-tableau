@@ -1,6 +1,6 @@
-/*GRAMMAR:D -> D <OR> C | CC -> C <AND> N | NN -> <FORALL> A <DOT> F | <EXISTS> A <DOT> F | FF -> <NOT> G | GG -> <PAR_OP> D <PAR_CL> | AA -> <ATOM>K -> T | T <SEMICOLON> K | DT -> A <SUBSUMED_BY> D | A <DEFINED_AS> DTRANSFORMED GRAMMAR: (without direct left recursion and common prefixes)D  -> C D1D1 -> <OR> C D1 | <EPSILON>C  -> N C1C1 -> <AND> N C1 | <EPSILON>N  -> <FORALL> A <DOT> F | <EXISTS> A <DOT> F | FF  -> <NOT> G | GG  -> <PAR_OP> D <PAR_CL> | AA  -> <ATOM>T  -> A T1T1 -> <SUBSUMED_BY> D | <DEFINED_AS> DK  -> T K1 | DK1 -> <EPSILON> | <SEMICOLON> K*/options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(DLLiteParser)package net.sf.dltableau.server.parser;
+/*GRAMMAR:D -> D <OR> C | CC -> C <AND> N | NN -> M | <NOT> MM -> <FORALL> A <DOT> F | <EXISTS> A <DOT> F | FF -> GG -> <PAR_OP> D <PAR_CL> | AA -> <ATOM>K -> T | T <SEMICOLON> K | DT -> A <SUBSUMED_BY> D | A <DEFINED_AS> DTRANSFORMED GRAMMAR: (without direct left recursion and common prefixes)D  -> C D1D1 -> <OR> C D1 | <EPSILON>C  -> N C1C1 -> <AND> N C1 | <EPSILON>N  -> M | <NOT> MM  -> <FORALL> A <DOT> F | <EXISTS> A <DOT> F | FF  -> GG  -> <PAR_OP> D <PAR_CL> | AA  -> <ATOM>T  -> A T1T1 -> <SUBSUMED_BY> D | <DEFINED_AS> DK  -> T K1 | DK1 -> <EPSILON> | <SEMICOLON> K*/options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(DLLiteParser)package net.sf.dltableau.server.parser;
 import net.sf.dltableau.server.parser.ast.*;import java.io.StringReader;
-public class DLLiteParser{  private AbstractNodeList list = new AbstractNodeList();    public static DLLiteParseResult parse(String s) throws ParseException  {    DLLiteParser p = new DLLiteParser(new StringReader(s));    p.K();    return DLLiteParseResult.factory(p.list);  }}PARSER_END(DLLiteParser)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* OPERATORS */{  < SUBSUMED_BY : "subsumed-by" >| < OR : "or" >| < AND : "and" >| < NOT : "not" >
+public class DLLiteParser{  private AbstractNodeList list = new AbstractNodeList();    public static DLLiteParseResult parse(String s) throws ParseException  {    DLLiteParser p = new DLLiteParser(new StringReader(s));    p.K();    return DLLiteParseResult.factory(p.list);  }}PARSER_END(DLLiteParser)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* OPERATORS */{  < SUBSUMED_BY : "subsumed-by" >| < OR : ("|"|"or") >| < AND : ("&"|"and") >| < NOT : ("!"|"not") >
 | < FORALL : "forall" >
 | < EXISTS : "exists" >
 | < DOT : "." >
@@ -22,8 +22,8 @@ AbstractNode C() :{  AbstractNode n, r;}{
 AbstractNode C1(AbstractNode n) :{  AbstractNode n2, r;  And and;}{
   < AND > n2 = N() {and = new And(n, n2);} r = C1(and)  {    return r;  }  | {return n;}}
 
-AbstractNode N() :{  AbstractNode n;  Atom role;}{
-  < FORALL > role = A() < DOT > n = F()  {	return new ForAll(role, n);  }    | < EXISTS > role = A() < DOT > n = F()  {	return new Exists(role, n);  }  | n = F()  {    return n;  }}AbstractNode F() :{  AbstractNode n;}{  < NOT > n = G()  {    return new Not(n);  }    | n = G()  {    return n;  }}
+AbstractNode N() :{  AbstractNode n;}{  < NOT > n = M()  {    return new Not(n);  }    | n = M()  {    return n;  }}AbstractNode M() :{  AbstractNode n;  Atom role;}{
+  < FORALL > role = A() < DOT > n = F()  {	return new ForAll(role, n);  }    | < EXISTS > role = A() < DOT > n = F()  {	return new Exists(role, n);  }  | n = F()  {    return n;  }}AbstractNode F() :{  AbstractNode n;}{  n = G()  {    return n;  }}
 
 AbstractNode G() :{  AbstractNode expr;  Atom atom;}{
   < PAR_OP > expr = D() < PAR_CL >  {    return new Parens(expr);  }  
