@@ -60,6 +60,14 @@ public class TBOX implements Iterable<AbstractDefinition> {
 		return tMapAxioms.get(conceptName);
 	}
 	
+	/**
+	 * Implements UNFOLDING (macro expansion).
+	 * This method, applied on the root concept, is suboptimal.
+	 * May yield exponential blow-up.
+	 * 
+	 * @param n Concept expression
+	 * @return Unfolded concept expression
+	 */
 	public AbstractNode replaceDefinedConcepts(AbstractNode n) {
 		if(n instanceof Not) {
 			Not m = (Not)n;
