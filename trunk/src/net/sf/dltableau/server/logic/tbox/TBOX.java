@@ -31,6 +31,8 @@ public class TBOX implements Iterable<AbstractDefinition> {
 	protected final Map<Atom, AbstractNode> tMapDefinitions = new HashMap<Atom, AbstractNode>();
 	protected final Map<Atom, AbstractNode> tMapAxioms = new HashMap<Atom, AbstractNode>();
 
+	public TBOX() {}
+	
 	public TBOX(AbstractNodeList l) {
 		for(AbstractNode n : l) {
 			if(n instanceof DefinedAs) {
