@@ -5,7 +5,7 @@ public class DLLiteParser{  private AbstractNodeList list = new AbstractNodeLi
 | < EXISTS : "exists" >
 | < DOT : "." >
 | < PAR_OP : "(" >
-| < PAR_CL : ")" >| < SEMICOLON : ";" >| < DEFINED_AS : "===" >}TOKEN :{  < ATOM : (< CHARUPPERCASE >|< CHARLOWERCASE >)(< CHARUPPERCASE >|< CHARLOWERCASE >|< DIGIT >)* >
+| < PAR_CL : ")" >| < SEMICOLON : ";" >| < DEFINED_AS : "=" >| < TOP : ("top"|"true") >| < BOTTOM : ("bottom"|"false") >}TOKEN :{  < ATOM : (< CHARUPPERCASE >|< CHARLOWERCASE >)(< CHARUPPERCASE >|< CHARLOWERCASE >|< DIGIT >)* >
 | < #CHARUPPERCASE : [ "A"-"Z" ] >
 | < #CHARLOWERCASE : [ "a"-"z" ] >
 | < #DIGIT : [ "0"-"9" ] >}
