@@ -12,4 +12,9 @@ public class UnmodifiableABOX extends ABOX {
 	public void add(AbstractInstance i) {
 		throw new UnsupportedOperationException("Unmodifiable ABOX");
 	}
+	
+	@Override
+	public ABOX getParent() {
+		return new UnmodifiableABOX(super.getParent());
+	}
 }

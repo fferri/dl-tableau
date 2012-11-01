@@ -1,6 +1,7 @@
 package net.sf.dltableau.server.logic.tbox;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +29,9 @@ import net.sf.dltableau.server.parser.ast.SubsumedBy;
  */
 public class TBOX implements Iterable<AbstractDefinition> {
 	protected final List<AbstractDefinition> tList = new ArrayList<AbstractDefinition>();
+	protected final List<DefinedAs> tListDefinitions = new ArrayList<DefinedAs>();
+	protected final List<SubsumedBy> tListAxioms = new ArrayList<SubsumedBy>();
+	protected final List<Or> tListNormalFormAxioms = new ArrayList<Or>();
 	protected final Map<Atom, AbstractNode> tMapDefinitions = new HashMap<Atom, AbstractNode>();
 	protected final Map<Atom, AbstractNode> tMapAxioms = new HashMap<Atom, AbstractNode>();
 
@@ -38,10 +42,13 @@ public class TBOX implements Iterable<AbstractDefinition> {
 			if(n instanceof DefinedAs) {
 				DefinedAs n1 = (DefinedAs)n;
 				tList.add(n1);
+				tListDefinitions.add(n1);
 				tMapDefinitions.put(n1.getConcept(), n1.getDefinition());
 			} else if(n instanceof SubsumedBy) {
 				SubsumedBy n1 = (SubsumedBy)n;
 				tList.add(n1);
+				tListAxioms.add(n1);
+				tListNormalFormAxioms.add(n1.asNormalForm());
 				tMapAxioms.put(n1.getConcept(), n1.getDefinition());
 			}
 		}
@@ -58,6 +65,10 @@ public class TBOX implements Iterable<AbstractDefinition> {
 	
 	public AbstractNode getAxiomBody(Atom conceptName) {
 		return tMapAxioms.get(conceptName);
+	}
+	
+	public List<Or> getNormalFormAxioms() {
+		return Collections.unmodifiableList(tListNormalFormAxioms);
 	}
 	
 	/**

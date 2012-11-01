@@ -1,26 +1,37 @@
 package net.sf.dltableau.server.logic.abox;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
 import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.parser.ast.Atom;
 
 public class RoleInstance extends AbstractInstance {
-	protected final Atom role;
-	protected final int individual1;
-	protected final int individual2;
+	public static enum Side {S1, S2};
 	
-	public RoleInstance(Atom role, int i1, int i2) {
+	protected final Atom role;
+	protected final Individual individual1;
+	protected final Individual individual2;
+	
+	public RoleInstance(Atom role, Individual i1, Individual i2) {
 		this.role = role;
 		this.individual1 = i1;
 		this.individual2 = i2;
 	}
 	
-	public int getIndividual1() {
+	public Individual getIndividual1() {
 		return individual1;
 	}
 	
-	public int getIndividual2() {
+	public Individual getIndividual2() {
 		return individual2;
+	}
+	
+	public Individual getIndividual(Side s) {
+		if(s.equals(Side.S1)) return individual1;
+		if(s.equals(Side.S2)) return individual2;
+		return null;
 	}
 	
 	public Atom getRole() {
@@ -35,6 +46,42 @@ public class RoleInstance extends AbstractInstance {
 		return ExpressionRenderer.render(this, renderMode);
 	}
 	
+	/**
+	 * Select roles matching the given arguments.
+	 * null means any (wildcard).
+	 * 
+	 * @param l list of RoleInstances
+	 * @param i1 left participant to the role
+	 * @param i2 right participant to the role 
+	 * @return list of matching RoleInstances
+	 */
+	public static List<RoleInstance> selectRoleInstances(List<RoleInstance> l, Individual i1, Individual i2) {
+		List<RoleInstance> r = new ArrayList<RoleInstance>();
+		for(RoleInstance ri : l) {
+			if(r.contains(ri)) continue;
+			if(i1 != null && !i1.equals(ri.getIndividual1())) continue;
+			if(i2 != null && !i2.equals(ri.getIndividual2())) continue;
+			r.add(ri);
+		}
+		return r;
+	}
+	
+	/**
+	 * Project the individuals involved in the specified side of the relation
+	 * 
+	 * @param l list of RoleInstances
+	 * @param s side of the relation
+	 * @return list of individuals involved
+	 */
+	public static List<Individual> projectIndividuals(List<RoleInstance> l, Side s) {
+		List<Individual> r = new ArrayList<Individual>();
+		for(RoleInstance ri : l) {
+			Individual i = ri.getIndividual(s);
+			if(!r.contains(i)) r.add(i);
+		}
+		return r;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(obj != null && obj.getClass().equals(RoleInstance.class)) {
@@ -43,5 +90,10 @@ public class RoleInstance extends AbstractInstance {
 		} else {
 			return false;
 		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return role.hashCode() + 23 * individual1.hashCode() + 17 * individual2.hashCode();
 	}
 }

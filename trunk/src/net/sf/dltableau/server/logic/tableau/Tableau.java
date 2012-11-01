@@ -6,6 +6,7 @@ import java.util.List;
 import net.sf.dltableau.server.logic.abox.ABOX;
 import net.sf.dltableau.server.logic.abox.AbstractInstance;
 import net.sf.dltableau.server.logic.abox.ConceptInstance;
+import net.sf.dltableau.server.logic.abox.Individual;
 import net.sf.dltableau.server.logic.abox.RoleInstance;
 import net.sf.dltableau.server.logic.abox.UnmodifiableABOX;
 import net.sf.dltableau.server.logic.tbox.TBOX;
@@ -29,7 +30,7 @@ public class Tableau implements Cloneable {
 	private ABOX abox0 = null;
 		
 	public void init(AbstractNode concept) {
-		init(null, concept);
+		init(new TBOX(), concept);
 	}
 	
 	public void init(TBOX tbox, AbstractNode concept) {
@@ -93,7 +94,7 @@ public class Tableau implements Cloneable {
 			if(!(i instanceof ConceptInstance)) continue;
 			ConceptInstance ci = (ConceptInstance)i;
 			AbstractNode c = ci.getConcept();
-			int x1 = ci.getIndividual();
+			Individual x1 = ci.getIndividual();
 			
 			if(c instanceof And) {
 				if(expandStep((And)c, x1, abox)) return true;
@@ -108,7 +109,7 @@ public class Tableau implements Cloneable {
 		return false;
 	}
 	
-	protected boolean expandStep(And and, int x1, ABOX abox) {
+	protected boolean expandStep(And and, Individual x1, ABOX abox) {
 		ConceptInstance ci1 = new ConceptInstance(and.getOp1(), x1);
 		ConceptInstance ci2 = new ConceptInstance(and.getOp2(), x1);
 
@@ -122,7 +123,7 @@ public class Tableau implements Cloneable {
 		return false;
 	}
 	
-	protected boolean expandStep(Or or, int x1, ABOX abox) {
+	protected boolean expandStep(Or or, Individual x1, ABOX abox) {
 		ConceptInstance ci1 = new ConceptInstance(or.getOp1(), x1);
 		ConceptInstance ci2 = new ConceptInstance(or.getOp2(), x1);
 
@@ -136,9 +137,11 @@ public class Tableau implements Cloneable {
 		return false;
 	}
 	
-	protected boolean expandStep(ForAll forall, int x1, ABOX abox) {
-		List<Integer> l = abox.getMatchingIndividualsByRole(forall.getRole(), x1);
-		for(Integer x2 : l) {
+	protected boolean expandStep(ForAll forall, Individual x1, ABOX abox) {
+		// selects x2 in R(x1,x2):
+		List<Individual> l = abox.getMatchingIndividualsByRole(forall.getRole(), x1);
+		
+		for(Individual x2 : l) {
 			ConceptInstance ci1 = new ConceptInstance(forall.getExpression(), x2);
 			if(!abox.contains(ci1)) {
 				ABOX a1 = new ABOX(abox);
@@ -150,30 +153,25 @@ public class Tableau implements Cloneable {
 		return false;
 	}
 	
-	protected boolean expandStep(Exists exists, int x1, ABOX abox) {
-		boolean foundPCT = false;
-		List<Integer> l = abox.getMatchingIndividualsByRole(exists.getRole(), x1);
-		for(Integer x2 : l) {
-			if(abox.contains(new ConceptInstance(exists.getExpression(), x2))) {
-				foundPCT = true;
-				break;
-			}
-		}
+	protected boolean expandStep(Exists exists, Individual x1, ABOX abox) {
+		// selects x2 in R(x1,x2):
+		List<Individual> l = abox.getMatchingIndividualsByRole(exists.getRole(), x1);
 		
-		if(!foundPCT) {
-			int newIndividual = abox.getNewIndividual();
-			ConceptInstance ci1 = new ConceptInstance(exists.getExpression(), newIndividual);
-			RoleInstance ri1 = new RoleInstance(exists.getRole(), x1, newIndividual);
-			ABOX a1 = new ABOX(abox);
-			a1.add(ci1);
-			a1.add(ri1);
-			return true;
-		}
+		// check if exists C(x2), if yes, stop here
+		for(Individual x2 : l)
+			if(abox.contains(new ConceptInstance(exists.getExpression(), x2)))
+				return false;
 		
-		return false;
+		Individual newIndividual = abox.getNewIndividual();
+		ConceptInstance ci1 = new ConceptInstance(exists.getExpression(), newIndividual);
+		RoleInstance ri1 = new RoleInstance(exists.getRole(), x1, newIndividual);
+		ABOX a1 = new ABOX(abox);
+		a1.add(ci1);
+		a1.add(ri1);
+		return true;
 	}
 	
-	protected boolean expandStep(Parens parens, int x1, ABOX abox) {
+	protected boolean expandStep(Parens parens, Individual x1, ABOX abox) {
 		ConceptInstance ci1 = new ConceptInstance(parens.getOp(), x1);
 		
 		if(!abox.contains(ci1)) {

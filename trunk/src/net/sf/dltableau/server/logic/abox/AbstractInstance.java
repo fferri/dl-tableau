@@ -6,4 +6,10 @@ public abstract class AbstractInstance {
 	public abstract String toString();
 	
 	public abstract String toString(RenderMode renderMode);
+	
+	@Override
+	public abstract boolean equals(Object obj);
+	
+	@Override
+	public abstract int hashCode();
 }

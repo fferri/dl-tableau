@@ -13,6 +13,7 @@ import net.sf.dltableau.server.logic.LogicUtils;
 import net.sf.dltableau.server.logic.abox.ABOX;
 import net.sf.dltableau.server.logic.abox.AbstractInstance;
 import net.sf.dltableau.server.logic.abox.ConceptInstance;
+import net.sf.dltableau.server.logic.abox.Individual;
 import net.sf.dltableau.server.logic.abox.RoleInstance;
 import net.sf.dltableau.server.logic.render.ASTRenderer;
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
@@ -103,9 +104,9 @@ public class Test {
 				modelMap.get(a).add(ri);
 			}
 		}
-		List<Integer> allI = abox.getAllIndividuals();
+		List<Individual> allI = abox.getAllIndividuals();
 		StringBuilder domSB = new StringBuilder();
-		for(Integer i : allI)
+		for(Individual i : allI)
 			domSB.append(domSB.length() == 0 ? "" : ", ").append(IndividualRenderer.render(i, renderMode));
 		System.out.println("DOMAIN = {" + domSB + "}");
 		for(Map.Entry<Atom, List<AbstractInstance>> e : modelMap.entrySet()) {
