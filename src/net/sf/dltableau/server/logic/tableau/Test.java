@@ -22,7 +22,6 @@ import net.sf.dltableau.server.logic.render.IndividualRenderer;
 import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.logic.tbox.TBOX;
 import net.sf.dltableau.server.parser.DLLiteParser;
-import net.sf.dltableau.server.parser.DLLiteParser.DLLiteParseResult;
 import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.*;
 
@@ -42,9 +41,8 @@ public class Test {
 	};
 	
 	public static void main(String[] args) throws ParseException {
-		DLLiteParseResult r = DLLiteParser.parse(examples[0]);
-		AbstractNode concept = r.getFormula();
-		TBOX tbox = r.getTBOX();
+		AbstractNode concept = DLLiteParser.parseConceptExpression(examples[0]);
+		TBOX tbox = null;
 		out.println("TBOX: " + tbox);		
 		out.println("Concept string (parsed): " + ExpressionRenderer.render(concept, renderMode));
 		concept = LogicUtils.toNegationNormalForm(concept);
