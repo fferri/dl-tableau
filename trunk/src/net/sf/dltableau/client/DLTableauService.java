@@ -1,5 +1,7 @@
 package net.sf.dltableau.client;
 
+import java.util.List;
+
 import net.sf.dltableau.shared.DLTableauBean;
 import net.sf.dltableau.shared.DLTableauOptions;
 
@@ -11,7 +13,13 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("solve")
 public interface DLTableauService extends RemoteService {
-	DLTableauBean solve(String formula, DLTableauOptions options) throws Exception;
+	String parseConceptString(String s) throws Exception;
+	
+	String parseDefinitionString(String s) throws Exception;
+	
+	DLTableauBean solve(String concept, DLTableauOptions options) throws Exception;
+	
+	DLTableauBean solve(List<String> tboxDefs, String concept, DLTableauOptions options) throws Exception;
 	
 	String syntaxTree(String formula, DLTableauOptions options) throws Exception;
 }
