@@ -49,6 +49,20 @@ public class LogicUtils {
 			return new Parens(toNegationNormalForm(m.getOp()));
 		} else if(n instanceof Atom) {
 			return n;
+		} else if(n instanceof AbstractDefinition) {
+			return toNegationNormalForm((AbstractDefinition)n);
+		} else {
+			throw new IllegalArgumentException("Cannot handle node of class " + n.getClass());
+		}
+	}
+	
+	public static AbstractDefinition toNegationNormalForm(AbstractDefinition n) {
+		if(n instanceof DefinedAs) {
+			DefinedAs m = (DefinedAs)n;
+			return new DefinedAs(m.getConceptName(), toNegationNormalForm(m.getOp2()));
+		} else if(n instanceof SubsumedBy) {
+			SubsumedBy m = (SubsumedBy)n;
+			return new SubsumedBy(toNegationNormalForm(m.getOp1()), toNegationNormalForm(m.getOp2()));
 		} else {
 			throw new IllegalArgumentException("Cannot handle node of class " + n.getClass());
 		}
@@ -101,10 +115,10 @@ public class LogicUtils {
 			return new Parens(removeDoubleParentheses(m.getOp()));
 		} else if(n instanceof SubsumedBy) {
 			SubsumedBy m = (SubsumedBy)n;
-			return new SubsumedBy(m.getConcept(), removeDoubleParentheses(m.getDefinition()));
+			return new SubsumedBy(removeDoubleParentheses(m.getOp1()), removeDoubleParentheses(m.getOp2()));
 		} else if(n instanceof DefinedAs) {
 			DefinedAs m = (DefinedAs)n;
-			return new DefinedAs(m.getConcept(), removeDoubleParentheses(m.getDefinition()));
+			return new DefinedAs(m.getConceptName(), removeDoubleParentheses(m.getOp2()));
 		} else if(n instanceof Atom) {
 			return n;
 		} else {
