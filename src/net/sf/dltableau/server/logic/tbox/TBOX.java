@@ -10,7 +10,6 @@ import java.util.Map;
 import net.sf.dltableau.server.logic.render.RenderMode;
 import net.sf.dltableau.server.parser.ast.AbstractDefinition;
 import net.sf.dltableau.server.parser.ast.AbstractNode;
-import net.sf.dltableau.server.parser.ast.AbstractNodeList;
 import net.sf.dltableau.server.parser.ast.And;
 import net.sf.dltableau.server.parser.ast.Atom;
 import net.sf.dltableau.server.parser.ast.DefinedAs;
@@ -33,23 +32,21 @@ public class TBOX implements Iterable<AbstractDefinition> {
 	protected final List<SubsumedBy> tListAxioms = new ArrayList<SubsumedBy>();
 	protected final List<Or> tListNormalFormAxioms = new ArrayList<Or>();
 	protected final Map<Atom, AbstractNode> tMapDefinitions = new HashMap<Atom, AbstractNode>();
-	protected final Map<Atom, AbstractNode> tMapAxioms = new HashMap<Atom, AbstractNode>();
 
 	public TBOX() {}
 	
-	public TBOX(AbstractNodeList l) {
+	public TBOX(List<AbstractDefinition> l) {
 		for(AbstractNode n : l) {
 			if(n instanceof DefinedAs) {
 				DefinedAs n1 = (DefinedAs)n;
 				tList.add(n1);
 				tListDefinitions.add(n1);
-				tMapDefinitions.put(n1.getConcept(), n1.getDefinition());
+				tMapDefinitions.put(n1.getConceptName(), n1.getOp2());
 			} else if(n instanceof SubsumedBy) {
 				SubsumedBy n1 = (SubsumedBy)n;
 				tList.add(n1);
 				tListAxioms.add(n1);
 				tListNormalFormAxioms.add(n1.asNormalForm());
-				tMapAxioms.put(n1.getConcept(), n1.getDefinition());
 			}
 		}
 	}
@@ -61,10 +58,6 @@ public class TBOX implements Iterable<AbstractDefinition> {
 	
 	public AbstractNode getDefinitionBody(Atom conceptName) {
 		return tMapDefinitions.get(conceptName);
-	}
-	
-	public AbstractNode getAxiomBody(Atom conceptName) {
-		return tMapAxioms.get(conceptName);
 	}
 	
 	public List<Or> getNormalFormAxioms() {

@@ -18,7 +18,6 @@ public class ExpressionRenderer {
 		else if(ast instanceof AbstractUnOp) render((AbstractUnOp)ast, renderMode, sb);
 		else if(ast instanceof AbstractQuantifier) render((AbstractQuantifier)ast, renderMode, sb);
 		else if(ast instanceof Atom) render((Atom)ast, renderMode, sb);
-		else if(ast instanceof AbstractNodeList) render((AbstractNodeList)ast, renderMode, sb);
 		else throw new IllegalArgumentException("Unexpected node: " + ast.getClass().getSimpleName());
 	}
 	
@@ -48,15 +47,6 @@ public class ExpressionRenderer {
 	
 	private static void render(Atom n, RenderMode renderMode, StringBuilder sb) {
 		sb.append(n.getName());
-	}
-	
-	private static void render(AbstractNodeList ns, RenderMode renderMode, StringBuilder sb) {
-		boolean first = true;
-		for(AbstractNode n : ns) {
-			if(first) first = false;
-			else sb.append("; ");
-			render(n, renderMode, sb);
-		}
 	}
 	
 	public static String render(AbstractInstance i, RenderMode renderMode) {
