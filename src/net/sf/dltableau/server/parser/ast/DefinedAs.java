@@ -4,4 +4,8 @@ public class DefinedAs extends AbstractDefinition {
 	public DefinedAs(Atom op1, AbstractNode op2) {
 		super(op1, op2);
 	}
+	
+	public Atom getConceptName() {
+		return (Atom)op1;
+	}
 }
