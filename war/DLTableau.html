@@ -17,20 +17,26 @@
     </noscript>
 
     <h1>DL Tableau</h1>
-	<a href="#" onClick="var s = document.getElementById('help').style; s.display=(s.display=='none'?'block':'none'); return false;">Syntax help</a>
-	<div id="help" style="display: none; background: LightYellow;">
-	<table border="0">
-	<tr><td class="sym">&exist;R.C</td><td class="txt">exists R. C</td></tr>
+	<a href="#" onClick="var s=document.getElementById('help').style; s.display=(s.display=='none'?'inline':'none'); return false;">Syntax help</a>
+	<div id="help" style="display: none;"><table border="0"><tr><td class="sym">&exist;R.C</td><td class="txt">exists R. C</td></tr>
 	<tr><td class="sym">&forall;R.C</td><td class="txt">forall R. C</td></tr>
 	<tr><td class="sym">C &#x2293; D</td><td class="txt">C and D</td></tr>
-	<tr><td class="sym">C &#x2294; D</td><td class="txt">C or D</pre><br/>
-	<tr><td class="sym">&not;C</td><td class="txt">not C</pre><br/>
-	<tr><td class="sym">C &#x2291; D</td><td class="txt">C subsumed-by D</td></tr>
+	<tr><td class="sym">C &#x2294; D</td><td class="txt">C or D</td></tr>
+	<tr><td class="sym">&not;C</td><td class="txt">not C</td></tr>
+	<tr><td class="sym">C &#x2291; D</td><td class="txt">C subsumed-by D</td><td>(TBOX only)</td></tr>
+	<tr><td class="sym">C &#x2261; D</td><td class="txt">C = D</td><td>(TBOX only)</td></tr>
 	</table></div>
 
     <table align="center" style="width: 100%;">
+      <tr><td colspan="3" style="font-weight:bold;">Enter TBOX definitions:</td></tr>
+      <tr><td id="tboxEditorContainer" colspan="2"></td><td id="tboxAddButtonContainer"></td></tr>
+      <tr><td id="tboxFieldContainer" colspan="2" rowspan="2"></td><td id="tboxEditButtonContainer"></td></tr>
+      <tr><td id="tboxRemoveButtonContainer"></td></tr>
+      
       <tr><td colspan="3" style="font-weight:bold;">Enter a DL concept expression:</td></tr>
-      <tr><td id="nameFieldContainer"></td><td id="sendButtonContainer"></td><td id="astButtonContainer"></td></tr>
+      <tr><td id="conceptFieldContainer" colspan="2" rowspan="2"></td><td id="sendButtonContainer"></td></tr>
+      <tr><td id="astButtonContainer"></td></tr>
+      
       <tr><td id="optionsContainer" colspan="3"></td></tr>
       <tr><td colspan="3" style="color:red;" id="errorLabelContainer"></td></tr>
       <tr><td colspan="3" style="" id="output"></td></tr>

@@ -1,6 +1,3 @@
-/** Add css rules here for your application. */
-
-
 /** Example rules used by the template application (remove for your app) */
 h1 {
   font-size: 2em;
@@ -9,25 +6,33 @@ h1 {
   text-align: center;
 }
 
-.sendButton {
-  display: block;
+.button {
+  /*display: block;*/
   font-size: 16pt;
 }
 
 .formula {
-	width: 100%;
+	width: 98%;
 	font-size: 16pt;
+}
+
+.tbox {
+	height: 5em;
+}
+
+#help table {
+	background: LightYellow;
+}
+
+#help table td {
+	margin: 0;
+	color: black;
+	font-size: 12pt;
 }
 
 #help table td.txt {
 	padding-left: 2em;
-	font-family: Monaco, Lucida Console, Monospace, Courier New, courier;
-	font-size: 12pt;
-}
-
-#help table td.sym {
-	font-weight: bolder;
-	font-size: 16pt;
+	padding-right: 2em;
 }
 
 td.tableau {
