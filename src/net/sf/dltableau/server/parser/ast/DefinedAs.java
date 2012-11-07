@@ -8,4 +8,9 @@ public class DefinedAs extends AbstractDefinition {
 	public Atom getConceptName() {
 		return (Atom)op1;
 	}
+	
+	@Override
+	public Or asNormalForm() {
+		return new Or(new And(op1, op2), new And(new Not(op1), new Not(op2)));
+	}
 }
