@@ -5,6 +5,7 @@ public class SubsumedBy extends AbstractDefinition {
 		super(op1, op2);
 	}
 	
+	@Override
 	public Or asNormalForm() {
 		return new Or(new Not(op1), op2);
 	}
