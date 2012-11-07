@@ -40,11 +40,7 @@ public class Tableau {
 		this.abox0 = new ABOX(null);
 		this.tbox = tbox;
 		
-		if(tbox != null)
-			concept = tbox.replaceDefinedConcepts(concept);
-		
 		concept = LogicUtils.toNegationNormalForm(concept);
-		concept = LogicUtils.removeDoubleParentheses(concept);
 		
 		Individual x0 = abox0.getNewIndividual();
 		this.abox0.add(new ConceptInstance(concept, x0));
@@ -101,6 +97,12 @@ public class Tableau {
 		return null;
 	}
 	
+	/**
+	 * Check if the tableau is closed, that is, every branch
+	 * contains a clash.
+	 * 
+	 * @return
+	 */
 	public boolean isClosed() {
 		//return getOpenBranches().isEmpty();
 		
@@ -110,6 +112,38 @@ public class Tableau {
 			if(!ab.containsClash())
 				return false;
 		return true;
+	}
+	
+	/**
+	 * Return a map of available expansions for every open branch
+	 * of the tableau.
+	 * 
+	 * @return
+	 */
+	public Map<ABOX, List<ConceptInstance>> getAvailableExpansions() {
+		Map<ABOX, List<ConceptInstance>> ret = new HashMap<ABOX, List<ConceptInstance>>();
+		for(ABOX branch : getOpenBranches())
+			ret.put(branch, getAvailableExpansions(branch));
+		return ret;
+	}
+	
+	/**
+	 * Return a list of available expansions for the given branch
+	 * of the tableau.
+	 * 
+	 * @param abox the given branch
+	 * @return
+	 */
+	public List<ConceptInstance> getAvailableExpansions(ABOX abox) {
+		List<ConceptInstance> ret = new ArrayList<ConceptInstance>();
+		if(abox.containsClash()) return ret;
+		for(int j = 0; j < abox.size(); j++) {
+			AbstractInstance i = abox.get(j);
+			if(!(i instanceof ConceptInstance)) continue;
+			if(expandStep((ConceptInstance)i, abox, true))
+				ret.add((ConceptInstance)i);
+		}
+		return ret;
 	}
 	
 	/**
@@ -154,38 +188,6 @@ public class Tableau {
 			if(expandStep((ConceptInstance)i, abox, false)) return true;
 		}
 		return false;
-	}
-	
-	/**
-	 * Return a map of available expansions for every open branch
-	 * of the tableau.
-	 * 
-	 * @return
-	 */
-	public Map<ABOX, List<ConceptInstance>> getAvailableExpansions() {
-		Map<ABOX, List<ConceptInstance>> ret = new HashMap<ABOX, List<ConceptInstance>>();
-		for(ABOX branch : getOpenBranches())
-			ret.put(branch, getAvailableExpansions(branch));
-		return ret;
-	}
-	
-	/**
-	 * Return a list of available expansions for the given branch
-	 * of the tableau.
-	 * 
-	 * @param abox the given branch
-	 * @return
-	 */
-	public List<ConceptInstance> getAvailableExpansions(ABOX abox) {
-		List<ConceptInstance> ret = new ArrayList<ConceptInstance>();
-		if(abox.containsClash()) return ret;
-		for(int j = 0; j < abox.size(); j++) {
-			AbstractInstance i = abox.get(j);
-			if(!(i instanceof ConceptInstance)) continue;
-			if(expandStep((ConceptInstance)i, abox, true))
-				ret.add((ConceptInstance)i);
-		}
-		return ret;
 	}
 	
 	/**
