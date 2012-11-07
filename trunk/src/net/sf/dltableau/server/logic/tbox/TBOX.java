@@ -42,6 +42,7 @@ public class TBOX implements Iterable<AbstractDefinition> {
 				tList.add(n1);
 				tListDefinitions.add(n1);
 				tMapDefinitions.put(n1.getConceptName(), n1.getOp2());
+				tListNormalFormAxioms.add(n1.asNormalForm());
 			} else if(n instanceof SubsumedBy) {
 				SubsumedBy n1 = (SubsumedBy)n;
 				tList.add(n1);
@@ -68,6 +69,9 @@ public class TBOX implements Iterable<AbstractDefinition> {
 	 * Implements UNFOLDING (macro expansion).
 	 * This method, applied on the root concept, is suboptimal.
 	 * May yield exponential blow-up.
+	 * 
+	 * This method does not check for cyclic concept definitions.
+	 * Therefore must be used only on acyclic definitions.
 	 * 
 	 * @param n Concept expression
 	 * @return Unfolded concept expression
