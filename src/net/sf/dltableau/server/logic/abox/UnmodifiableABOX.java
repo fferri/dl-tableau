@@ -6,7 +6,7 @@ import java.util.List;
 public class UnmodifiableABOX extends ABOX {
 	// COPY constructor
 	public UnmodifiableABOX(ABOX abox) {
-		super(abox.parent);
+		super(abox.parent, abox.id);
 		
 		this.aList.addAll(abox.aList);
 		this.aListConcepts.addAll(abox.aListConcepts);
