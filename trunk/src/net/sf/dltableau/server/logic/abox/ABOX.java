@@ -26,25 +26,32 @@ public class ABOX implements Iterable<AbstractInstance> {
 	
 	protected final List<ABOX> children = new ArrayList<ABOX>(2);
 	protected final ABOX parent;
-	protected final int level;
-	protected final int childOrdinal;
+	
+	protected long nextId = 1; // used only in toplevel ABOX, via nextId()
+	protected final long id;
+	
+	protected long nextInstanceId = 1;
 
 	public ABOX(ABOX parent) {
+		this(parent, parent != null ? parent.getNextId() : 1);
+		nextId = 2;
+	}
+	
+	protected ABOX(ABOX parent, long id) {
 		// double linked tree of ABOXes:
 		this.parent = parent;
 		if(parent != null) parent.children.add(this);
 		
-		// locate level of this ABOX in the ABOX tree
-		ABOX tmp = this;
-		int level_ = 0;
-		while(tmp.parent != null) {
-			level_++;
-			tmp = tmp.parent;
-		}
-		level = level_;
-		
-		// locate ordinal of this ABOX among the siblings
-		childOrdinal = (parent != null) ? parent.children.indexOf(this) : 0;
+		this.id = id;
+	}
+	
+	protected long getNextId() {
+		if(parent != null) return parent.getNextId();
+		else return nextId++;
+	}
+	
+	public long getId() {
+		return id;
 	}
 	
 	@Override
@@ -102,14 +109,12 @@ public class ABOX implements Iterable<AbstractInstance> {
 	}
 	
 	public int getLevel() {
-		return level;
+		if(parent == null) return 0;
+		else return 1 + parent.getLevel();
 	}
 	
 	public String getName() {
-		if(parent != null && parent.children.size() > 1)
-			return "A" + level + "." + childOrdinal;
-		else
-			return "A" + level;
+		return "A" + id;
 	}
 
 	public void add(AbstractInstance i) {
@@ -125,6 +130,7 @@ public class ABOX implements Iterable<AbstractInstance> {
 	private void addConceptInstance(ConceptInstance ci) {
 		ci = ci.removeParentheses();
 		if(contains(ci)) return;
+		ci.setId(nextInstanceId++);
 		aList.add(ci);
 		aListConcepts.add(ci);
 		aSetIndividuals.add(ci.getIndividual());
@@ -132,6 +138,7 @@ public class ABOX implements Iterable<AbstractInstance> {
 	
 	private void addRoleInstance(RoleInstance ri) {
 		if(contains(ri)) return;
+		ri.setId(nextInstanceId++);
 		aList.add(ri);
 		aListRoles.add(ri);
 		aSetIndividuals.add(ri.getIndividual1());
@@ -158,6 +165,15 @@ public class ABOX implements Iterable<AbstractInstance> {
 		if(i < aList.size()) return aList.get(i);
 		if(parent == null) throw new ArrayIndexOutOfBoundsException();
 		return parent.get(i - aList.size());
+	}
+	
+	public AbstractInstance getInstanceById(long id) {
+		for(AbstractInstance i : aList)
+			if(i.getId() == id)
+				return i;
+		if(parent != null)
+			return parent.getInstanceById(id);
+		return null;
 	}
 	
 	public ConceptInstance getConceptInstance(int i) {
@@ -279,7 +295,7 @@ public class ABOX implements Iterable<AbstractInstance> {
 	}
 	
 	protected void treeString(StringBuilder sb) {
-		String indent = ""; for(int i = 0; i < level; i++) indent += "  ";
+		String indent = ""; for(int i = 0; i < getLevel(); i++) indent += "  ";
 		for(AbstractInstance i : aList) sb.append(indent + i + "\n");
 		for(ABOX abox : children) abox.treeString(sb);
 	}

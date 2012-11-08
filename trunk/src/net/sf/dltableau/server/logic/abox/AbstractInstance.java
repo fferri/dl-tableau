@@ -6,6 +6,16 @@ import java.util.List;
 import net.sf.dltableau.server.logic.render.RenderMode;
 
 public abstract class AbstractInstance {
+	private long id = -1;
+	
+	public void setId(long id) {
+		this.id = id;
+	}
+	
+	public long getId() {
+		return id;
+	}
+	
 	public abstract String toString();
 	
 	public abstract String toString(RenderMode renderMode);
