@@ -17,6 +17,7 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -43,6 +44,7 @@ public class DLTableau implements EntryPoint {
 	final Button astButton = new Button("AST");
 	
 	final CheckBox useUnicode = new CheckBox("Use UNICODE symbols");
+	final CheckBox interactiveMode = new CheckBox("Interactive mode");
 	final Label errorLabel = new Label();
 	final HTML outputLabel = new HTML();
 	
@@ -50,10 +52,19 @@ public class DLTableau implements EntryPoint {
 		tboxEdit, tboxAddButton,
 		tboxField, tboxEditButton, tboxRemoveButton,
 		formulaField, goButton, astButton,
-		useUnicode
+		useUnicode, interactiveMode
 	};
+	
+	private List<String> lastExpansionSequence = new ArrayList<String>();
 
 	public void onModuleLoad() {
+		History.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				computeTableauIncr(event.getValue());
+			}
+		});
+		
 		addTBOXDef("D subsumed-by exists R. C");
 		addTBOXDef("C = D");
 		setConceptString("exists R. D and forall R. (not C)");
@@ -82,6 +93,7 @@ public class DLTableau implements EntryPoint {
 		RootPanel.get("astButtonContainer").add(astButton);
 		
 		RootPanel.get("optionsContainer").add(useUnicode);
+		RootPanel.get("optionsContainer").add(interactiveMode);
 		
 		RootPanel.get("errorLabelContainer").add(errorLabel);
 		RootPanel.get("output").add(outputLabel);
@@ -197,8 +209,39 @@ public class DLTableau implements EntryPoint {
 	private String getConceptString() {
 		return formulaField.getText();
 	}
-
+	
 	private void computeTableau() {
+		if(interactiveMode.getValue() == true) {
+			lastExpansionSequence = new ArrayList<String>();
+			computeTableauIncr(null);
+		} else {
+			computeTableauOneShot();
+		}
+	}
+	
+	private void computeTableauIncr(String exp1) {
+		errorLabel.setText("");
+		lockUi(true);
+		List<String> exp = new ArrayList<String>(lastExpansionSequence);
+		if(exp1 != null) exp.add(exp1);
+		tableauService.incrSolve(
+			getTBOXDefsStringList(), getConceptString(), exp, tableauOptions,
+			new AsyncCallback<DLTableauBean>() {
+				public void onFailure(Throwable e) {
+					Window.alert("Remote Procedure Call - Failure:\n\n" + e.getMessage());
+					lockUi(false);
+				}
+				
+				public void onSuccess(DLTableauBean result) {
+					lastExpansionSequence = result.expansionSequence;
+					outputLabel.setHTML(result.toHTML());
+					lockUi(false);
+				}
+			}
+		);
+	}
+
+	private void computeTableauOneShot() {
 		errorLabel.setText("");
 		lockUi(true);
 		tableauService.solve(
@@ -210,6 +253,7 @@ public class DLTableau implements EntryPoint {
 				}
 				
 				public void onSuccess(DLTableauBean result) {
+					lastExpansionSequence = result.expansionSequence;
 					outputLabel.setHTML(result.toHTML());
 					lockUi(false);
 				}
