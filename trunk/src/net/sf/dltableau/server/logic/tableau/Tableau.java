@@ -82,16 +82,16 @@ public class Tableau {
 		return openBranches;
 	}
 	
-	public ABOX getABOXByName(String name) {
-		return getABOXByName(abox0, name);
+	public ABOX getABOXById(long id) {
+		return getABOXById(abox0, id);
 	}
 	
-	protected ABOX getABOXByName(ABOX root, String name) {
-		if(root.getName().equalsIgnoreCase(name))
+	protected ABOX getABOXById(ABOX root, long id) {
+		if(root.getId() == id)
 			return root;
 		ABOX r;
 		for(ABOX child : root.getChildren()) {
-			r = getABOXByName(child, name);
+			r = getABOXById(child, id);
 			if(r != null) return r;
 		}
 		return null;
@@ -216,6 +216,14 @@ public class Tableau {
 	protected boolean expandStep(ConceptInstance ci, ABOX abox, boolean pretend) {
 		if(!abox.contains(ci))
 			throw new IllegalArgumentException("ABOX " + abox.getName() + " does not contain such instance: " + ci);
+		
+		// can't expand a closed branch:
+		if(abox.containsClash())
+			return false;
+		
+		// expansion carries only at leaf branches
+		if(!abox.isLeaf())
+			return false;
 		
 		AbstractNode c = ci.getConcept();
 		Individual x1 = ci.getIndividual();
