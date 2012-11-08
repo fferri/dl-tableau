@@ -7,6 +7,7 @@ import java.util.List;
 import net.sf.dltableau.client.DLTableauService;
 import net.sf.dltableau.server.logic.abox.ABOX;
 import net.sf.dltableau.server.logic.abox.AbstractInstance;
+import net.sf.dltableau.server.logic.abox.ConceptInstance;
 import net.sf.dltableau.server.logic.render.ASTRenderer;
 import net.sf.dltableau.server.logic.render.ExpressionRenderer;
 import net.sf.dltableau.server.logic.render.RenderMode;
@@ -17,6 +18,7 @@ import net.sf.dltableau.server.parser.ParseException;
 import net.sf.dltableau.server.parser.ast.AbstractDefinition;
 import net.sf.dltableau.server.parser.ast.AbstractNode;
 import net.sf.dltableau.shared.DLTableauBean;
+import net.sf.dltableau.shared.DLTableauInstance;
 import net.sf.dltableau.shared.DLTableauNode;
 import net.sf.dltableau.shared.DLTableauOptions;
 
@@ -51,6 +53,12 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	
 	@Override
 	public DLTableauBean solve(List<String> tboxDefs, String concept, DLTableauOptions options) throws Exception {
+		return incrSolve(tboxDefs, concept, null, options);
+	}
+	
+	@Override
+	public DLTableauBean incrSolve(List<String> tboxDefs, String concept,
+			List<String> expansionSequence, DLTableauOptions options) {
 		Key logKey = KeyFactory.createKey("log", "log0");
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		Entity e = new Entity("formulaLog", logKey);
@@ -87,29 +95,49 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		ret.nnf = ExpressionRenderer.render(conceptAST, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		Tableau tableau = new Tableau();
 		tableau.init(tbox, conceptAST);
-		tableau.expand();
-		ret.root = buildABOXTree(tableau.getABOX(), options);
+		if(expansionSequence == null) {
+			tableau.expand();
+		} else {
+			for(String expStr : expansionSequence) {
+				String f[] = expStr.split("-");
+				long aboxId = Long.parseLong(f[0]);
+				ABOX abox = tableau.getABOXById(aboxId);
+				if(abox == null) throw new RuntimeException("Bad ABOX id: " + aboxId);
+				long instanceId = Long.parseLong(f[1]);
+				ConceptInstance ci = (ConceptInstance)abox.getInstanceById(instanceId);
+				if(ci == null) throw new RuntimeException("Bad instance id: " + instanceId);
+				if(!tableau.expandStep(ci, abox)) {
+					throw new RuntimeException("Fatal: failed tableau expansion in sequential mode");
+				}
+			}
+		}
+		ret.expansionSequence = expansionSequence;
+		ret.root = buildABOXTree(tableau, tableau.getABOX(), options);
 
 		return ret;
 	}
 	
-	@Override
-	public DLTableauBean solve(String concept, DLTableauOptions options) throws Exception {
-		return solve(null, concept, options);
-	}
-	
-	private DLTableauNode buildABOXTree(ABOX abox, DLTableauOptions options) {
+	private DLTableauNode buildABOXTree(Tableau tableau, ABOX abox, DLTableauOptions options) {
 		DLTableauNode n = new DLTableauNode();
 		for(AbstractInstance i : abox.getInstances(false)) {
-			n.expr.add(ExpressionRenderer.render(i, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT));
+			DLTableauInstance inst = new DLTableauInstance();
+			if(i instanceof ConceptInstance) {
+				ConceptInstance ci = (ConceptInstance)i;
+				if(tableau.canExpandStep(ci, abox))
+					inst.id = abox.getId() + "-" + i.getId();
+			}
+			inst.expr = ExpressionRenderer.render(i, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
+			n.expr.add(inst);
 		}
 		if(abox.isLeaf() && abox.containsClash()) {
 			DLTableauNode clashMarker = new DLTableauNode();
-			clashMarker.expr.add("&#x22c6;");
+			DLTableauInstance clashMarkerInst = new DLTableauInstance();
+			clashMarkerInst.expr = "&#x22c6;";
+			clashMarker.expr.add(clashMarkerInst);
 			n.child.add(clashMarker);
 		} else {
 			for(ABOX abox1 : abox.getChildren()) {
-				n.child.add(buildABOXTree(abox1, options));
+				n.child.add(buildABOXTree(tableau, abox1, options));
 			}
 		}
 		return n;

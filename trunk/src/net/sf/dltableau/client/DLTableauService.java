@@ -17,9 +17,9 @@ public interface DLTableauService extends RemoteService {
 	
 	String parseDefinitionString(String s) throws Exception;
 	
-	DLTableauBean solve(String concept, DLTableauOptions options) throws Exception;
-	
 	DLTableauBean solve(List<String> tboxDefs, String concept, DLTableauOptions options) throws Exception;
 	
 	String syntaxTree(String formula, DLTableauOptions options) throws Exception;
+	
+	DLTableauBean incrSolve(List<String> tboxDefs, String concept, List<String> expansionSequence, DLTableauOptions options) throws Exception;
 }

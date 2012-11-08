@@ -15,10 +15,12 @@ public interface DLTableauServiceAsync {
 	
 	void parseDefinitionString(String s, AsyncCallback<String> callback);
 
-	void solve(String formula, DLTableauOptions options, AsyncCallback<DLTableauBean> callback);
-
 	void syntaxTree(String concept, DLTableauOptions options, AsyncCallback<String> callback);
 
 	void solve(List<String> tboxDefs, String concept, DLTableauOptions options,
+			AsyncCallback<DLTableauBean> callback);
+
+	void incrSolve(List<String> tboxDefs, String concept,
+			List<String> expansionSequence, DLTableauOptions options,
 			AsyncCallback<DLTableauBean> callback);
 }
