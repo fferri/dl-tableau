@@ -14,6 +14,9 @@ public abstract class ParserTests {
 	
 	private static final Test[] tests = {
 		new Test()
+			.formula("forall r. (not c)")
+			.expectedAST(new ForAll(r, new Parens(new Not(c)))),
+		new Test()
 			.formula("not exists r.a or b")
 			.expectedAST(new Or(new ForAll(r, new Not(a)), b)),
 		new Test()
