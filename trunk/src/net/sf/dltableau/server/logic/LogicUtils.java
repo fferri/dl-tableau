@@ -4,6 +4,10 @@ import net.sf.dltableau.server.parser.ast.*;
 
 public class LogicUtils {
 	public static AbstractNode toNegationNormalForm(AbstractNode n) {
+		return removeDoubleParentheses(toNegationNormalForm(n, null));
+	}
+	
+	protected static AbstractNode toNegationNormalForm(AbstractNode n, Object o) {
 		if(n instanceof Not) {
 			Not not = (Not)n;
 			AbstractNode x = not.getOp();
