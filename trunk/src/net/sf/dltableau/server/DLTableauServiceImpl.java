@@ -3,6 +3,7 @@ package net.sf.dltableau.server;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.dltableau.client.DLTableauService;
 import net.sf.dltableau.server.logic.abox.ABOX;
@@ -90,9 +91,9 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			throw new RuntimeException("Error in concept expression:\n\n" + ex.getMessage());
 		}
 
-		ret.original = ExpressionRenderer.render(conceptAST, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
+		ret.original = ExpressionRenderer.render(conceptAST, options.isUsingUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		
-		ret.nnf = ExpressionRenderer.render(conceptAST, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
+		ret.nnf = ExpressionRenderer.render(conceptAST, options.isUsingUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		Tableau tableau = new Tableau();
 		tableau.init(tbox, conceptAST);
 		if(expansionSequence == null) {
@@ -103,9 +104,23 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 				long aboxId = Long.parseLong(f[0]);
 				ABOX abox = tableau.getABOXById(aboxId);
 				if(abox == null) throw new RuntimeException("Bad ABOX id: " + aboxId);
+				
+				/* bug?
 				long instanceId = Long.parseLong(f[1]);
-				ConceptInstance ci = (ConceptInstance)abox.getInstanceById(instanceId);
-				if(ci == null) throw new RuntimeException("Bad instance id: " + instanceId);
+				AbstractInstance ai = abox.getInstanceById(instanceId);
+				if(ai == null)
+					throw new RuntimeException("Bad instance id: " + instanceId + " (is null)");
+				if(!(ai instanceof ConceptInstance))
+					throw new RuntimeException("Bad instance id: " + instanceId + " (is not a ConceptInstance)");
+				ConceptInstance ci = (ConceptInstance)ai;
+				*/
+				
+				int instanceIdx = Integer.parseInt(f[1]);
+				List<ConceptInstance> lci = tableau.getAvailableExpansions(abox);
+				ConceptInstance ci = lci.get(instanceIdx);
+				if(ci == null)
+					throw new RuntimeException("Bad instance id: " + instanceIdx + " (is null)");
+				
 				if(!tableau.expandStep(ci, abox)) {
 					throw new RuntimeException("Fatal: failed tableau expansion in sequential mode");
 				}
@@ -119,14 +134,18 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	
 	private DLTableauNode buildABOXTree(Tableau tableau, ABOX abox, DLTableauOptions options) {
 		DLTableauNode n = new DLTableauNode();
-		for(AbstractInstance i : abox.getInstances(false)) {
+		boolean getAboxInstancesRecursively = !options.isUsingCompactBranches();
+		List<ConceptInstance> lci = tableau.getAvailableExpansions(abox);
+		for(AbstractInstance i : abox.getInstances(getAboxInstancesRecursively)) {
 			DLTableauInstance inst = new DLTableauInstance();
 			if(i instanceof ConceptInstance) {
 				ConceptInstance ci = (ConceptInstance)i;
-				if(tableau.canExpandStep(ci, abox))
-					inst.id = abox.getId() + "-" + i.getId();
+				//if(tableau.canExpandStep(ci, abox))
+				//	inst.id = abox.getId() + "-" + i.getId();
+				if(lci.contains(ci))
+					inst.id = abox.getId() + "-" + lci.indexOf(ci);
 			}
-			inst.expr = ExpressionRenderer.render(i, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
+			inst.expr = ExpressionRenderer.render(i, options.isUsingUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 			n.expr.add(inst);
 		}
 		if(abox.isLeaf() && abox.containsClash()) {
@@ -148,7 +167,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		try {
 			AbstractNode concept = DLLiteParser.parseConceptExpression(formula);
 			//TBOX tbox = r.getTBOX();
-			return ASTRenderer.render(concept, options.isUseUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
+			return ASTRenderer.render(concept, options.isUsingUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		} catch(ParseException e) {
 			throw new RuntimeException("Parse exception: " + e.getMessage());
 		}
