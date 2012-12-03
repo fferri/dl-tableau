@@ -98,7 +98,7 @@ public class DLTableau implements EntryPoint {
 		RootPanel.get("errorLabelContainer").add(errorLabel);
 		RootPanel.get("output").add(outputLabel);
 
-		useUnicode.setValue(tableauOptions.isUseUnicodeSymbols());
+		useUnicode.setValue(tableauOptions.isUsingUnicodeSymbols());
 		
 		formulaField.setFocus(true);
 		formulaField.selectAll();
@@ -183,7 +183,13 @@ public class DLTableau implements EntryPoint {
 		
 		useUnicode.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				tableauOptions.setUseUnicodeSymbols(event.getValue());
+				tableauOptions.setUsingUnicodeSymbols(event.getValue());
+			}
+		});
+		
+		interactiveMode.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				tableauOptions.setUsingCompactBranches(!event.getValue());
 			}
 		});
 	}
