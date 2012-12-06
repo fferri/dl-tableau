@@ -61,6 +61,7 @@ public class DLTableau implements EntryPoint {
 			public void onValueChange(ValueChangeEvent<String> event) {
 				List<String> expSeq = new ArrayList<String>();
 				String token = event.getValue();
+				if(token.equals("")) return;
 				while(true) {
 					int i = token.indexOf('+');
 					if(i >= 0) {
@@ -227,6 +228,7 @@ public class DLTableau implements EntryPoint {
 	}
 	
 	private void computeTableau() {
+		History.newItem("");
 		if(interactiveMode.getValue() == true) {
 			computeTableauIncr(new ArrayList<String>());
 		} else {
