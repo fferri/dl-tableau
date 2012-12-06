@@ -1,6 +1,8 @@
 package net.sf.dltableau.server;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -141,14 +143,20 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			DLTableauInstance inst = new DLTableauInstance();
 			if(i instanceof ConceptInstance) {
 				ConceptInstance ci = (ConceptInstance)i;
-				//if(tableau.canExpandStep(ci, abox))
-				//	inst.id = abox.getId() + "-" + i.getId();
+				inst.individual = ci.getIndividual().ordinal();
 				if(lci.contains(ci))
 					inst.id = abox.getId() + "-" + lci.indexOf(ci);
 			}
 			inst.expr = ExpressionRenderer.render(i, options.isUsingUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 			n.expr.add(inst);
 		}
+		// sort this cell's content:
+		Collections.sort(n.expr, new Comparator<DLTableauInstance>() {
+			public int compare(DLTableauInstance a, DLTableauInstance b) {
+				return new Integer(a.individual).compareTo(b.individual);
+			}
+		});
+		// add clash marker:
 		if(abox.isLeaf() && abox.containsClash()) {
 			DLTableauNode clashMarker = new DLTableauNode();
 			DLTableauInstance clashMarkerInst = new DLTableauInstance();
@@ -156,6 +164,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			clashMarker.expr.add(clashMarkerInst);
 			n.child.add(clashMarker);
 		} else {
+			// or recurse children:
 			for(ABOX abox1 : abox.getChildren()) {
 				n.child.add(buildABOXTree(tableau, abox1, options));
 			}
