@@ -55,13 +55,23 @@ public class DLTableau implements EntryPoint {
 		useUnicode, interactiveMode
 	};
 	
-	private List<String> lastExpansionSequence = new ArrayList<String>();
-
 	public void onModuleLoad() {
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
-				computeTableauIncr(event.getValue());
+				List<String> expSeq = new ArrayList<String>();
+				String token = event.getValue();
+				while(true) {
+					int i = token.indexOf('+');
+					if(i >= 0) {
+						expSeq.add(token.substring(0, i));
+						token = token.substring(i + 1);
+					} else {
+						expSeq.add(token);
+						break;
+					}
+				}
+				computeTableauIncr(expSeq);
 			}
 		});
 		
@@ -218,33 +228,27 @@ public class DLTableau implements EntryPoint {
 	
 	private void computeTableau() {
 		if(interactiveMode.getValue() == true) {
-			lastExpansionSequence = new ArrayList<String>();
-			computeTableauIncr(null);
+			computeTableauIncr(new ArrayList<String>());
 		} else {
 			computeTableauOneShot();
 		}
 	}
 	
-	private void computeTableauIncr(String exp1) {
-		errorLabel.setText("");
-		lockUi(true);
-		List<String> exp = new ArrayList<String>(lastExpansionSequence);
-		if(exp1 != null) exp.add(exp1);
+	private void computeTableauIncr(List<String> expansionSequence) {
 		tableauService.incrSolve(
-			getTBOXDefsStringList(), getConceptString(), exp, tableauOptions,
-			new AsyncCallback<DLTableauBean>() {
-				public void onFailure(Throwable e) {
-					Window.alert("Remote Procedure Call - Failure:\n\n" + e.getMessage());
-					lockUi(false);
+				getTBOXDefsStringList(), getConceptString(), expansionSequence, tableauOptions,
+				new AsyncCallback<DLTableauBean>() {
+					public void onFailure(Throwable e) {
+						Window.alert("Remote Procedure Call - Failure:\n\n" + e.getMessage());
+						lockUi(false);
+					}
+					
+					public void onSuccess(DLTableauBean result) {
+						outputLabel.setHTML(result.toHTML());
+						lockUi(false);
+					}
 				}
-				
-				public void onSuccess(DLTableauBean result) {
-					lastExpansionSequence = result.expansionSequence;
-					outputLabel.setHTML(result.toHTML());
-					lockUi(false);
-				}
-			}
-		);
+				);
 	}
 
 	private void computeTableauOneShot() {
@@ -259,7 +263,6 @@ public class DLTableau implements EntryPoint {
 				}
 				
 				public void onSuccess(DLTableauBean result) {
-					lastExpansionSequence = result.expansionSequence;
 					outputLabel.setHTML(result.toHTML());
 					lockUi(false);
 				}

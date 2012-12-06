@@ -23,8 +23,13 @@ public class DLTableauBean implements IsSerializable {
 		sb.append("<table class='tableau' align='center' border='0'>");
 		sb.append("<tr><td class='tableau' " + (leaf ? "" : "style='border-bottom: 1px solid black;' ") + "colspan='" + n.child.size() + "'>");
 		for(DLTableauInstance inst : n.expr) {
-			if(inst.id != null)
-				sb.append("<a class='tce' href=\"#").append(inst.id).append("\">");
+			if(inst.id != null) {
+				sb.append("<a class='tce' href=\"#");
+				for(String ex : expansionSequence)
+					sb.append(ex).append("+");
+				sb.append(inst.id);
+				sb.append("\">");
+			}
 			sb.append(inst.expr);
 			if(inst.id != null)
 				sb.append("</a>");
