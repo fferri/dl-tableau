@@ -134,6 +134,8 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	private DLTableauNode buildABOXTree(Tableau tableau, ABOX abox, DLTableauOptions options) {
 		DLTableauNode n = new DLTableauNode();
 		boolean getAboxInstancesRecursively = !options.isUsingCompactBranches();
+		// optimization: only show full abox in leaves:
+		getAboxInstancesRecursively = getAboxInstancesRecursively && abox.isLeaf();
 		List<ConceptInstance> lci = tableau.getAvailableExpansions(abox);
 		for(AbstractInstance i : abox.getInstances(getAboxInstancesRecursively)) {
 			DLTableauInstance inst = new DLTableauInstance();
