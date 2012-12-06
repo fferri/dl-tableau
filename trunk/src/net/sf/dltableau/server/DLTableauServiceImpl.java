@@ -29,6 +29,8 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 @SuppressWarnings("serial")
@@ -61,14 +63,8 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 	@Override
 	public DLTableauBean incrSolve(List<String> tboxDefs, String concept,
 			List<String> expansionSequence, DLTableauOptions options) {
-		Key logKey = KeyFactory.createKey("log", "log0");
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		Entity e = new Entity("formulaLog", logKey);
-		e.setProperty("date", new Date());
-		e.setProperty("ip", getThreadLocalRequest().getRemoteAddr());
-		
 		DLTableauBean ret = new DLTableauBean();
-		AbstractNode conceptAST;
+		AbstractNode conceptAST = null;
 		TBOX tbox = null;
 		List<AbstractDefinition> defs = new ArrayList<AbstractDefinition>();
 		if(tboxDefs != null) {
@@ -81,16 +77,12 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			}
 			tbox = new TBOX(defs);
 		}
-		e.setProperty("formula", defs + "; " + concept);
 		try {
 			conceptAST = DLLiteParser.parseConceptExpression(concept);
-			e.setProperty("ok", true);
-			datastore.put(e);
 		} catch(ParseException ex) {
-			e.setProperty("ok", false);
-			datastore.put(e);
 			throw new RuntimeException("Error in concept expression:\n\n" + ex.getMessage());
 		}
+		log(defs + "; " + concept, conceptAST != null, getThreadLocalRequest().getRemoteAddr());
 
 		ret.original = ExpressionRenderer.render(conceptAST, options.isUsingUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 		
@@ -181,5 +173,33 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		} catch(ParseException e) {
 			throw new RuntimeException("Parse exception: " + e.getMessage());
 		}
+	}
+	
+	private void log(String formula, boolean ok, String ip) {
+		Key logKey = KeyFactory.createKey("log", "log0");
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		
+		Query q = new Query("formulaLog")
+				.addFilter("formula", Query.FilterOperator.EQUAL, formula)
+				.addFilter("ip", Query.FilterOperator.EQUAL, ip);
+		
+		PreparedQuery pq = datastore.prepare(q);
+		
+		for(Entity result : pq.asIterable()) {
+			Long count = (Long)result.getProperty("count");
+			if(count == null) count = 1L;
+			result.setProperty("count", count + 1);
+			result.setProperty("date", new Date());
+			datastore.put(result);
+			return;
+		}
+		
+		Entity e = new Entity("formulaLog", logKey);
+		e.setProperty("count", 1);
+		e.setProperty("date", new Date());
+		e.setProperty("ip", ip);
+		e.setProperty("formula", formula);
+		e.setProperty("ok", ok);
+		datastore.put(e);
 	}
 }
