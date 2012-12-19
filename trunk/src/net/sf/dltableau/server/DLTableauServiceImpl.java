@@ -132,7 +132,25 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 		getAboxInstancesRecursively = getAboxInstancesRecursively
 				&& abox.isLeaf() && !abox.containsClash();
 		List<ConceptInstance> lci = tableau.getAvailableExpansions(abox);
+		List<AbstractInstance> instToShow = new ArrayList<AbstractInstance>();
+		
+		// add every expandable instance
 		for(AbstractInstance i : abox.getInstances(getAboxInstancesRecursively)) {
+			if(i instanceof ConceptInstance) {
+				ConceptInstance ci = (ConceptInstance)i;
+				if(tableau.canExpandStep(ci, abox))
+					instToShow.add(i);
+			}
+		}
+		
+		// plus every instance that's properly contained in this abox, that is:
+		//  that is contained in this abox, and not in its ancestors.
+		for(AbstractInstance i : abox.getInstances(false)) {
+			if(!instToShow.contains(i))
+				instToShow.add(i);
+		}
+		
+		for(AbstractInstance i : instToShow) {
 			DLTableauInstance inst = new DLTableauInstance();
 			if(i instanceof ConceptInstance) {
 				ConceptInstance ci = (ConceptInstance)i;
@@ -143,6 +161,7 @@ public class DLTableauServiceImpl extends RemoteServiceServlet implements DLTabl
 			inst.expr = ExpressionRenderer.render(i, options.isUsingUnicodeSymbols() ? RenderMode.HTML : RenderMode.PLAINTEXT);
 			n.expr.add(inst);
 		}
+		
 		// sort this cell's content:
 		Collections.sort(n.expr, new Comparator<DLTableauInstance>() {
 			public int compare(DLTableauInstance a, DLTableauInstance b) {
